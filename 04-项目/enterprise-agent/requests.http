@@ -1,0 +1,33 @@
+### 1) 健康检查（预期 {"status":"UP"}）
+GET http://localhost:8080/actuator/health
+
+### 2) 对话：一句话介绍
+POST http://localhost:8080/chat
+Content-Type: application/json
+
+{
+  "systemPrompt": "你是企业智能助手，回答要简洁。",
+  "messages": [
+    { "role": "user", "content": "用一句话介绍你自己" }
+  ]
+}
+
+### 3) 多轮对话
+POST http://localhost:8080/chat
+Content-Type: application/json
+
+{
+  "messages": [
+    { "role": "user", "content": "1+1=?" },
+    { "role": "assistant", "content": "2" },
+    { "role": "user", "content": "那 3*4 呢？" }
+  ]
+}
+
+### 4) 非法输入（预期 400 {"error":"..."}）
+POST http://localhost:8080/chat
+Content-Type: application/json
+
+{
+  "messages": []
+}
