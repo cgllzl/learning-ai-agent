@@ -23,4 +23,5 @@
 - 学习周：Week 1
 
 ## 笔记列表
-- [DeepSeek 配置（2026-08-11）](DeepSeek配置.md)
+- [DeepSeek 配置（Day 1）](DeepSeek配置.md)
+- [LangChain4j 接入 DeepSeek 实现（Day 2）](LangChain4j-Chat实现.md)
