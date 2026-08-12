@@ -1,4 +1,4 @@
-﻿# LLM 应用开发
+# LLM 应用开发
 
 ## 核心概念
 - LLM 是什么
@@ -25,3 +25,4 @@
 ## 笔记列表
 - [DeepSeek 配置（Day 1）](DeepSeek配置.md)
 - [LangChain4j 接入 DeepSeek 实现（Day 2）](LangChain4j-Chat实现.md)
+- [技术原理与请求流程（Day 2 归档）](技术原理与请求流程.md)
