@@ -31,3 +31,15 @@ Content-Type: application/json
 {
   "messages": []
 }
+
+### 5) 流式对话（SSE，逐字输出，最后 [DONE]）
+# IDEA HTTP Client 会流式显示；命令行可用：curl -N -X POST ...（见 README）
+POST http://localhost:8080/chat/stream
+Content-Type: application/json
+
+{
+  "systemPrompt": "你是企业智能助手，回答要简洁。",
+  "messages": [
+    { "role": "user", "content": "用三句话介绍 Java 21 的新特性" }
+  ]
+}

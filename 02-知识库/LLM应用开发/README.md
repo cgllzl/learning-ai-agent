@@ -26,3 +26,4 @@
 - [DeepSeek 配置（Day 1）](DeepSeek配置.md)
 - [LangChain4j 接入 DeepSeek 实现（Day 2）](LangChain4j-Chat实现.md)
 - [技术原理与请求流程（Day 2 归档）](技术原理与请求流程.md)
+- [SSE 流式输出（Day 3）](SSE流式输出.md)
