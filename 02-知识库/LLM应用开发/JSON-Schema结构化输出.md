@@ -61,7 +61,7 @@ flowchart LR
     F -->|JSON 文本| E
     C -->|Jackson 解析 JsonNode| G[校验必填字段]
     G -->|result| B
-    B -->|{"result": {...}}| A
+    B -->|"返回 result JSON"| A
 ```
 
 ## 六、测试
