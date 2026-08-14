@@ -1,5 +1,6 @@
 package com.enterprise.agent.chat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -30,11 +31,17 @@ class ChatControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @MockBean
     private ChatService chatService;
 
     @MockBean
     private StreamingChatService streamingChatService;
+
+    @MockBean
+    private StructuredChatService structuredChatService;
 
     @Test
     void chatReturnsReply() throws Exception {
@@ -122,5 +129,45 @@ class ChatControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"messages\":[]}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void structuredReturnsJsonResult() throws Exception {
+        String json = """
+                {"summary":"Java 21 新特性","keywords":["虚拟线程"],"sentiment":"positive"}
+                """;
+        when(structuredChatService.structured(eq(null), anyList(), eq(null), eq(null)))
+                .thenReturn(objectMapper.readTree(json));
+
+        mockMvc.perform(post("/chat/structured")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"messages":[{"role":"user","content":"说说 Java 21"}]}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result.summary").value("Java 21 新特性"))
+                .andExpect(jsonPath("$.result.sentiment").value("positive"));
+    }
+
+    @Test
+    void structuredRejectsEmptyMessages() throws Exception {
+        mockMvc.perform(post("/chat/structured")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"messages\":[]}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void structuredRejectsUnknownSchema() throws Exception {
+        when(structuredChatService.structured(eq(null), anyList(), eq("unknown"), eq(null)))
+                .thenThrow(new IllegalArgumentException("不支持的 schema: unknown"));
+
+        mockMvc.perform(post("/chat/structured")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"messages":[{"role":"user","content":"hi"}],"schema":"unknown"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("不支持的 schema: unknown"));
     }
 }
