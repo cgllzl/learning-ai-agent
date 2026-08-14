@@ -15,10 +15,14 @@ public class ChatController {
 
     private final ChatService chatService;
     private final StreamingChatService streamingChatService;
+    private final StructuredChatService structuredChatService;
 
-    public ChatController(ChatService chatService, StreamingChatService streamingChatService) {
+    public ChatController(ChatService chatService,
+                          StreamingChatService streamingChatService,
+                          StructuredChatService structuredChatService) {
         this.chatService = chatService;
         this.streamingChatService = streamingChatService;
+        this.structuredChatService = structuredChatService;
     }
 
     @PostMapping
@@ -44,6 +48,12 @@ public class ChatController {
                     emitter.completeWithError(error);
                 });
         return emitter;
+    }
+
+    @PostMapping("/structured")
+    public StructuredChatResponse chatStructured(@Valid @RequestBody StructuredChatRequest request) {
+        return new StructuredChatResponse(
+                structuredChatService.structured(request.systemPrompt(), request.messages(), request.schema(), request.mode()));
     }
 
     private void send(SseEmitter emitter, String data) {

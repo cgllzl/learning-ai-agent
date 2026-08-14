@@ -32,6 +32,19 @@ Content-Type: application/json
   "messages": []
 }
 
+### 6) 结构化输出（JSON 对象，字段受 schema 约束）
+POST http://localhost:8080/chat/structured
+Content-Type: application/json
+
+{
+  "systemPrompt": "你是信息抽取助手，从用户输入中抽取信息。",
+  "messages": [
+    { "role": "user", "content": "这个产品很好用，就是价格有点贵，不过客服响应很快，整体很满意。" }
+  ],
+  "schema": "extract",
+  "mode": "json_object"
+}
+
 ### 5) 流式对话（SSE，逐字输出，最后 [DONE]）
 # IDEA HTTP Client 会流式显示；命令行可用：curl -N -X POST ...（见 README）
 POST http://localhost:8080/chat/stream

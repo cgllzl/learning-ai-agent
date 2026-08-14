@@ -42,6 +42,25 @@ Content-Type: application/json
 
 响应：`{ "reply": "你好！……" }`
 
+### POST /chat/structured —— 结构化输出（JSON Schema 约束）
+
+```http
+POST /chat/structured
+Content-Type: application/json
+
+{
+  "systemPrompt": "你是信息抽取助手，从用户输入中抽取信息。",
+  "messages": [ { "role": "user", "content": "这个产品很好用……" } ],
+  "schema": "extract",
+  "mode": "json_object"
+}
+```
+
+响应：`{ "result": { "summary": "...", "keywords": [...], "sentiment": "positive" } }`
+
+- `schema`：`extract`（信息抽取）或 `ticket`（工单分类），默认 `extract`
+- `mode`：`json_object`（默认，DeepSeek 兼容：JSON 格式约束 + prompt 强化 + 服务端字段校验）；`json_schema`（OpenAI 系原生严格模式，DeepSeek 暂不支持）
+
 ### POST /chat/stream —— 流式对话（SSE，逐块返回）
 
 ```powershell
