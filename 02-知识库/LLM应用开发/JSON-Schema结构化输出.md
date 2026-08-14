@@ -51,6 +51,8 @@ ChatRequest request = ChatRequest.builder()
 
 ## 五、请求流程
 
+![JSON Schema 结构化输出流程](images/JSON-Schema结构化输出.png)
+
 ```mermaid
 flowchart LR
     A[Apifox] -->|POST /chat/structured| B[ChatController]
