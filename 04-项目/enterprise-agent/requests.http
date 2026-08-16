@@ -1,3 +1,15 @@
+### 8) 订单 Agent（Tool Calling：自动调用 Java 工具）
+POST http://localhost:8080/agent/order
+Content-Type: application/json
+
+{ "message": "查询订单 O1001 的信息" }
+
+### 8b) 订单 Agent：查物流 + 改状态
+POST http://localhost:8080/agent/order
+Content-Type: application/json
+
+{ "message": "帮我查一下 O1002 的物流，然后把 O1003 的状态改为 SHIPPED" }
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 

@@ -66,6 +66,17 @@ Content-Type: application/json
   - `product` 商品属性抽取：`{name, category, price, stock_status}`
 - `mode`：`json_object`（默认，DeepSeek 兼容：JSON 格式约束 + prompt 强化 + 服务端字段校验）；`json_schema`（OpenAI 系原生严格模式，DeepSeek 暂不支持）
 
+### POST /agent/order —— 订单 Agent（Tool Calling）
+
+```http
+POST /agent/order
+Content-Type: application/json
+
+{ "message": "查询订单 O1001 的信息" }
+```
+
+Agent 会自动决定调用哪个工具（查询订单/用户/物流/商品、修改订单状态），返回 `{ "reply": "..." }`。工具数据为内存模拟（`MockOrderData`）。
+
 ### POST /chat/stream —— 流式对话（SSE，逐块返回）
 
 ```powershell
@@ -136,4 +147,4 @@ mvn test -Dtest=StreamingChatServiceLiveTest   # 真实 DeepSeek 流式联调（
 - Day 1（2026-08-11）：环境搭建完成，空项目跑通
 - Day 2（2026-08-12）：`/chat` 对话接口（LLM API / Prompt / 校验）
 - Day 3（2026-08-13）：`/chat/stream` SSE 流式输出
-- Day 4 起：Structured Output / Retry（见 `04-项目/Sprints/Sprint-01-Chat.md`）
+- Week 2 起：Tool Calling 订单 Agent（见 `04-项目/Sprints/Sprint-02-Tool-Calling.md`）

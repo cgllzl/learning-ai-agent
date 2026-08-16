@@ -1,4 +1,4 @@
-﻿# Tool Calling
+# Tool Calling
 
 ## 核心概念
 - Function Calling 原理
