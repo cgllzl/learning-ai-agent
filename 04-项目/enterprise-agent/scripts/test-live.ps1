@@ -4,9 +4,11 @@
 param([string]$Test = "")
 
 $ErrorActionPreference = "Stop"
-`n# 强制控制台输出为 UTF-8，避免中文乱码（IDEA 终端 / PowerShell 5.1）
+
+# 强制控制台输出为 UTF-8，避免中文乱码（IDEA 终端 / PowerShell 5.1）
 try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
 try { chcp 65001 | Out-Null } catch {}
+
 $root = Split-Path -Parent $PSScriptRoot
 $envFile = Join-Path $root ".env"
 
