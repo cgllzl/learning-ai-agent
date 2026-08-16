@@ -2,24 +2,27 @@
 
 > Week 2 ｜ 归档：`05-记录/归档/2026-08-16-Week2-Day2-第一个Java-Tool.md` ｜ 代码：`com.enterprise.agent.agent`
 
-## 〇、流程总览（注册 + 调用）
+## 〇、调用时序图（接口没实现，数据从哪来）
 
-![Day 2 工具注册与调用流程](images/Day2-工具注册与调用流程.png)
+![Day 2 调用时序图](images/Day2-调用时序图.png)
 
 ```mermaid
-flowchart TB
-    subgraph 注册阶段
-        A["Java 方法 getOrder"] -->|"@Tool/@P 注解"| B["AiServices 扫描"]
-        B --> C["生成 ToolSpecification"]
-        C --> D["注册给 LLM tools"]
-    end
-    subgraph 调用阶段
-        E["用户提问"] --> F["模型返回 tool_calls"]
-        F --> G["代理执行 getOrder"]
-        G --> H["真实结果回填"]
-        H --> I["模型最终回答"]
-    end
-    D --> E
+sequenceDiagram
+    participant U as 你的代码
+    participant P as 代理（AiServices 生成）
+    participant L as DeepSeek
+    participant T as OrderTools
+    U->>P: assistant.chat("查询订单 O1001")
+    P->>P: 读取方法注解：@SystemMessage + @UserMessage
+    P->>P: 组装消息 [system, user] + 已注册的工具列表
+    P->>L: chatModel.chat(请求)
+    L-->>P: 返回 toolCall { name: getOrder, args: {orderId: "O1001"} }
+    P->>T: 反射调用 orderTools.getOrder("O1001")
+    T-->>P: "订单 O1001：用户 U1，金额 399.0 元，状态 PAID"
+    P->>P: 把工具结果追加为 Tool 消息，再请求一次
+    P->>L: chatModel.chat(新请求)
+    L-->>P: 返回最终文本（不再调工具）
+    P-->>U: 返回该文本（String）
 ```
 
 ## 一、@Tool 注解：把 Java 方法变成模型可调用的工具
