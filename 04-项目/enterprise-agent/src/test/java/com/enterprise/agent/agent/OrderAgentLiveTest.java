@@ -36,7 +36,9 @@ class OrderAgentLiveTest {
                 Duration.ofSeconds(60), 2, "deepseek-chat");
         OpenAiChatModel model = OpenAiChatModel.builder()
                 .baseUrl(props.baseUrl()).apiKey(props.apiKey())
-                .modelName(props.model()).timeout(props.timeout()).build();
+                .modelName(props.model()).timeout(props.timeout())
+                .logRequests(true).logResponses(true)   // 打开请求/响应日志，观察 tools 与 tool_calls
+                .build();
         return new OrderAgentService(model, new OrderTools(new MockOrderData()));
     }
 }

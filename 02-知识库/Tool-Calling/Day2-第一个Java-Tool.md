@@ -48,7 +48,44 @@ OrderAssistant assistant = AiServices.builder(OrderAssistant.class)
 - 单元：`OrderToolsTest` —— 直接调用 `getOrder`，断言返回内容与兜底分支。
 - 真实联调：`OrderAgentLiveTest` —— 问「查询订单 O1001」，回复里出现「399」（只可能来自工具返回值，证明模型真的调用了 Java 工具）。
 
-## 五、Day 2 范围说明
+## 五、如何观察 Agent 内部请求（logRequests）
+
+在 LiveTest 的模型构造上加两行，就能看到完整的 Agent Loop：
+
+```java
+OpenAiChatModel.builder()
+        .baseUrl(...).apiKey(...).modelName(...)
+        .logRequests(true).logResponses(true)   // 打开请求/响应日志
+        .build();
+```
+
+实测输出（关键片段）：
+
+1. **第一次请求**（带工具定义）：
+```json
+"messages": [ {system}, {user: "查询订单 O1001 的信息"} ],
+"tools": [ { "type": "function", "function": {
+    "name": "getOrder", "description": "根据订单号查询订单信息",
+    "parameters": { "properties": { "orderId": {...} }, "required": ["orderId"] } } } ]
+```
+
+2. **第一次响应**（模型决定调用工具）：
+```json
+"message": { "content": "好的，我来为您查询订单 O1001 的信息。",
+  "tool_calls": [ { "id": "call_00_...", "type": "function",
+    "function": { "name": "getOrder", "arguments": "{\"orderId\": \"O1001\"}" } } ] }
+"finish_reason": "tool_calls"
+```
+
+3. **第二次请求**（已把 Java 工具结果回填）：
+```json
+{ "role": "assistant", "content": "好的，我来为您查询订单 O1001 的信息。", "tool_calls": [...] },
+{ "role": "tool", "tool_call_id": "call_00_...", "content": "订单 O1001：用户 U1，商品 P1，金额 399.0 元，状态 PAID" }
+```
+
+> 证据链：请求 1 带 `tools` → 响应 1 返回 `tool_calls` → 请求 2 里出现 `role: "tool"` 的工具结果（这个结果来自你的 `OrderTools.getOrder`）→ 模型据此给出最终回答。**这就是 AiServices 帮你实现的 Agent Loop。**
+
+## 六、Day 2 范围说明
 
 - 本日只实现：`MockOrderData`（订单）+ `OrderTools.getOrder` + `AiServices` 注册。
 - 后续：Day 3 加 Agent 对话接口（HTTP）；Day 4 扩展用户/物流/商品工具；Day 5 修改订单状态。
