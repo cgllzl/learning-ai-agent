@@ -57,10 +57,20 @@ public <T> T callWithFallback(Function<OpenAiChatModel, T> modelAction) {
 | AI 服务不可用（重试 + 降级后仍失败） | 503 `{"error":"主模型与备用模型均调用失败…"}` |
 | 其他异常 | 502 |
 
-## 六、测试
+## 六、测试（ResilientCallerTest 用例说明）
 
-- `ResilientCallerTest`（5 个）：首次成功 / 重试后成功 / 不可重试快速失败（不降级）/ 主模型失败降级成功 / 双模型失败抛 503 异常。
-- 真实联调：结构化 LiveTest 走 `ResilientCaller` 链路验证。
+> 代码位置：`04-项目/enterprise-agent/src/test/java/com/enterprise/agent/chat/ResilientCallerTest.java`
+> 每个用例都带 Javadoc 注释。测试不联网不花钱：mock 主/备两个模型，maxRetries=2（即每个模型最多调用 3 次）。
+
+| 用例 | 场景 | 期望结果 | 验证点 |
+| --- | --- | --- | --- |
+| `succeedsImmediatelyOnFirstAttempt` | 首次调用成功 | 返回模型回复；主模型调用 1 次、备用模型 0 次 | 容错包装不影响正常路径 |
+| `retriesTransientFailureThenSucceeds` | 先抛 2 次 5xx，第 3 次成功 | 返回回复；主模型共调用 3 次（含 2 次重试） | 暂时性故障能自动重试扛过去 |
+| `failsFastOnNonRetriableError` | 抛 400（InvalidRequestException） | 异常原样抛出；主模型只调 1 次、不降级 | 参数/认证类错误必须快速暴露，不掩盖问题 |
+| `fallsBackToSecondaryModelWhenPrimaryExhaustsRetries` | 主模型持续 5xx，备用模型成功 | 返回备用模型回复；备用模型调用 1 次 | 降级路径（fallback-model 的意义） |
+| `throwsAiServiceUnavailableWhenBothModelsFail` | 两个模型都持续 5xx | 抛 AiServiceUnavailableException（对外 503） | 最终兜底：不返回空结果、不静默吞错 |
+
+- 真实联调：`StructuredChatServiceLiveTest` 走 `ResilientCaller` 链路调用真实 DeepSeek（extract/classify/resume 三场景）。
 
 ## 七、下一步
 
