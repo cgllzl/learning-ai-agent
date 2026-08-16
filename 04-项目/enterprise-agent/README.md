@@ -58,7 +58,12 @@ Content-Type: application/json
 
 响应：`{ "result": { "summary": "...", "keywords": [...], "sentiment": "positive" } }`
 
-- `schema`：`extract`（信息抽取）或 `ticket`（工单分类），默认 `extract`
+- `schema`（内置 5 种场景，默认 `extract`）：
+  - `extract` 信息抽取：`{summary, keywords, sentiment}`
+  - `ticket` 工单/客服分类：`{category, priority, needs_human, reply}`
+  - `classify` 内容分类打标：`{category, tags[], confidence}`
+  - `resume` 简历解析：`{name, years, skills[], education[]}`
+  - `product` 商品属性抽取：`{name, category, price, stock_status}`
 - `mode`：`json_object`（默认，DeepSeek 兼容：JSON 格式约束 + prompt 强化 + 服务端字段校验）；`json_schema`（OpenAI 系原生严格模式，DeepSeek 暂不支持）
 
 ### POST /chat/stream —— 流式对话（SSE，逐块返回）

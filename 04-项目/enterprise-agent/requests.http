@@ -45,6 +45,19 @@ Content-Type: application/json
   "mode": "json_object"
 }
 
+### 7) 内容分类打标（schema=classify）
+POST http://localhost:8080/chat/structured
+Content-Type: application/json
+
+{
+  "systemPrompt": "你是内容分类助手，对用户输入的内容分类打标。",
+  "messages": [
+    { "role": "user", "content": "今天发布了一个新的 Java 21 特性教程，讲虚拟线程的用法。" }
+  ],
+  "schema": "classify",
+  "mode": "json_object"
+}
+
 ### 5) 流式对话（SSE，逐字输出，最后 [DONE]）
 # IDEA HTTP Client 会流式显示；命令行可用：curl -N -X POST ...（见 README）
 POST http://localhost:8080/chat/stream

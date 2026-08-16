@@ -80,6 +80,50 @@ class StructuredChatServiceTest {
     }
 
     @Test
+    void classifySchemaAttachesCorrectSchema() {
+        when(chatModel.chat(any(dev.langchain4j.model.chat.request.ChatRequest.class))).thenReturn(
+                ChatResponse.builder().aiMessage(new AiMessage("""
+                        {"category":"tech","tags":["AI","Java"],"confidence":0.95}
+                        """)).build());
+
+        service.structured(null, List.of(new ChatRequest.Message("user", "这是一篇讲 Java 21 的文章")), "classify", "json_schema");
+
+        ArgumentCaptor<dev.langchain4j.model.chat.request.ChatRequest> captor =
+                ArgumentCaptor.forClass(dev.langchain4j.model.chat.request.ChatRequest.class);
+        verify(chatModel).chat((dev.langchain4j.model.chat.request.ChatRequest) captor.capture());
+
+        ResponseFormat format = captor.getValue().responseFormat();
+        assertThat(format.jsonSchema().name()).isEqualTo("classify_content");
+    }
+
+    @Test
+    void resumeSchemaAttachesCorrectSchema() {
+        when(chatModel.chat(any(dev.langchain4j.model.chat.request.ChatRequest.class))).thenReturn(
+                ChatResponse.builder().aiMessage(new AiMessage("""
+                        {"name":"张三","years":5,"skills":["Java","Spring"],"education":["本科"]}
+                        """)).build());
+
+        JsonNode result = service.structured(
+                null, List.of(new ChatRequest.Message("user", "我叫张三，五年 Java 经验，本科")), "resume", null);
+
+        assertThat(result.get("name").asText()).isEqualTo("张三");
+        assertThat(result.get("years").asInt()).isEqualTo(5);
+    }
+
+    @Test
+    void productSchemaRejectsMissingField() {
+        when(chatModel.chat(any(dev.langchain4j.model.chat.request.ChatRequest.class))).thenReturn(
+                ChatResponse.builder().aiMessage(new AiMessage("""
+                        {"name":"机械键盘","category":"外设","price":399}
+                        """)).build());
+
+        assertThatThrownBy(() -> service.structured(
+                null, List.of(new ChatRequest.Message("user", "机械键盘 399 元")), "product", null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("缺少字段");
+    }
+
+    @Test
     void rejectsUnknownSchema() {
         assertThatThrownBy(() -> service.structured(
                 null, List.of(new ChatRequest.Message("user", "hi")), "unknown", null))

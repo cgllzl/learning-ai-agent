@@ -86,6 +86,7 @@ public class StructuredChatService {
     private StructuredSchema resolveSchema(String schemaName) {
         String name = (schemaName == null || schemaName.isBlank()) ? "extract" : schemaName.toLowerCase();
         return switch (name) {
+            // 场景 1：信息抽取（客户反馈 → 摘要/情绪/关键词）
             case "extract" -> new StructuredSchema(
                     JsonSchema.builder()
                             .name("extract_info")
@@ -101,6 +102,8 @@ public class StructuredChatService {
                             .build(),
                     "输出必须是一个 JSON 对象，包含三个字段：summary（字符串，内容摘要）、keywords（字符串数组）、sentiment（枚举，取值为 positive/neutral/negative 之一）。不要输出其他内容。",
                     List.of("summary", "keywords", "sentiment"));
+
+            // 场景 2：工单/客服分类
             case "ticket" -> new StructuredSchema(
                     JsonSchema.builder()
                             .name("ticket_info")
@@ -114,6 +117,60 @@ public class StructuredChatService {
                             .build(),
                     "输出必须是一个 JSON 对象，包含四个字段：category（枚举 question/bug/suggestion）、priority（枚举 high/medium/low）、needs_human（布尔）、reply（字符串）。不要输出其他内容。",
                     List.of("category", "priority", "needs_human", "reply"));
+
+            // 场景 3：内容分类打标
+            case "classify" -> new StructuredSchema(
+                    JsonSchema.builder()
+                            .name("classify_content")
+                            .rootElement(JsonObjectSchema.builder()
+                                    .addEnumProperty("category", List.of("news", "tech", "life", "other"))
+                                    .addProperty("tags",
+                                            JsonArraySchema.builder()
+                                                    .items(JsonStringSchema.builder().build())
+                                                    .build())
+                                    .addNumberProperty("confidence", "置信度，0 到 1 之间")
+                                    .required("category", "tags", "confidence")
+                                    .build())
+                            .build(),
+                    "输出必须是一个 JSON 对象，包含三个字段：category（枚举 news/tech/life/other）、tags（字符串数组）、confidence（数字，0 到 1 之间）。不要输出其他内容。",
+                    List.of("category", "tags", "confidence"));
+
+            // 场景 4：简历解析（非结构化文本 → 结构化字段）
+            case "resume" -> new StructuredSchema(
+                    JsonSchema.builder()
+                            .name("resume_parse")
+                            .rootElement(JsonObjectSchema.builder()
+                                    .addStringProperty("name", "姓名")
+                                    .addNumberProperty("years", "工作年限")
+                                    .addProperty("skills",
+                                            JsonArraySchema.builder()
+                                                    .items(JsonStringSchema.builder().build())
+                                                    .build())
+                                    .addProperty("education",
+                                            JsonArraySchema.builder()
+                                                    .items(JsonStringSchema.builder().build())
+                                                    .build())
+                                    .required("name", "years", "skills", "education")
+                                    .build())
+                            .build(),
+                    "输出必须是一个 JSON 对象，包含四个字段：name（字符串，姓名）、years（数字，工作年限）、skills（字符串数组，技能）、education（字符串数组，教育经历）。不要输出其他内容。",
+                    List.of("name", "years", "skills", "education"));
+
+            // 场景 5：商品属性抽取（电商）
+            case "product" -> new StructuredSchema(
+                    JsonSchema.builder()
+                            .name("product_parse")
+                            .rootElement(JsonObjectSchema.builder()
+                                    .addStringProperty("name", "商品名称")
+                                    .addStringProperty("category", "商品类目")
+                                    .addNumberProperty("price", "价格")
+                                    .addEnumProperty("stock_status", List.of("in_stock", "out_of_stock", "unknown"))
+                                    .required("name", "category", "price", "stock_status")
+                                    .build())
+                            .build(),
+                    "输出必须是一个 JSON 对象，包含四个字段：name（字符串，商品名称）、category（字符串，商品类目）、price（数字，价格）、stock_status（枚举 in_stock/out_of_stock/unknown）。不要输出其他内容。",
+                    List.of("name", "category", "price", "stock_status"));
+
             default -> throw new IllegalArgumentException("不支持的 schema: " + schemaName);
         };
     }

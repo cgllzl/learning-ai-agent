@@ -71,6 +71,27 @@ flowchart LR
 - 单测：mock 模型返回固定 JSON，断言解析、字段校验、ResponseFormat 是否正确附带。
 - 真实联调：`StructuredChatServiceLiveTest`（默认跳过，设 `DEEPSEEK_API_KEY` 后运行），用中文输入实测抽取 summary/keywords/sentiment。
 
-## 七、下一步
+## 七、典型使用场景（为什么按 schema 入参构建）
+
+核心价值：把「模型说什么」变成「模型**按约定的格式**说什么」，程序才能可靠消费 AI 输出。
+一个 `/chat/structured` 接口通过 `schema` 入参服务多种场景，服务端不硬编码业务结构。
+
+| 场景 | 示例 | schema（本项目内置） |
+| --- | --- | --- |
+| 信息抽取 | 客户反馈 → 摘要/情绪/关键词 | `extract` → `{summary, keywords, sentiment}` |
+| 工单/客服 | 留言 → 分类/优先级/是否需要人工 | `ticket` → `{category, priority, needs_human, reply}` |
+| 内容分类打标 | 审核、意图识别、多标签 | `classify` → `{category, tags[], confidence}` |
+| 非结构化转结构化 | 简历解析、合同字段、商品属性 | `resume` → `{name, years, skills[], education[]}` |
+| 电商商品 | 商品信息抽取入库 | `product` → `{name, category, price, stock_status}` |
+| 多业务线复用 | 电商/客服/法务共用同一接口 | 各业务线传自己的 schema |
+| 工具参数（预告） | Agent 决定「调哪个工具、填什么参数」 | 工具参数 JSON Schema（Week 2 Tool Calling） |
+
+### 设计要点
+- **接口复用**：新增业务结构只需加一个 schema 定义，核心链路（解析→约束→校验→返回）不用改。
+- **输出即契约**：字段名/类型/枚举都是约定，下游代码直接消费，无需解析自由文本。
+- **约束幻觉**：Schema 限定输出，配合服务端 `validateRequiredFields` 兜底，脏数据不进入业务系统。
+- **生产注意**：建议用 schema 白名单（本项目即内置 5 种），不要让客户端传任意 JSON Schema，防滥用/注入/成本问题；校验失败要有重试或明确报错。
+
+## 八、下一步
 
 - Day 5：Retry / Timeout / Fallback + 统一错误处理完善
