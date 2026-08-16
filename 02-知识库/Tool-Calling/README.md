@@ -13,6 +13,8 @@
 - [Day 1：Function Calling 原理（已完成）](Day1-Function-Calling原理.md)
 - [Day 2：第一个 Java Tool（已完成）](Day2-第一个Java-Tool.md)
 - [Day 3：企业订单 Agent 查询接口（已完成）](Day3-订单查询Agent.md)
+- [Day 3：企业订单 Agent 查询接口（已完成）](Day3-订单查询Agent.md)
+- [FAQ：常见疑问（模型在哪指定 / chat 是谁的 / 方法名）](FAQ-常见疑问.md)
 
 ## 常用官方资料
 - LangChain4j Tools：https://docs.langchain4j.dev/tutorials/tools
