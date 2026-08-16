@@ -1,4 +1,4 @@
-# 真实 DeepSeek 联调测试（自动读取 .env 的 Key）
+﻿# 真实 DeepSeek 联调测试（自动读取 .env 的 Key）
 # 用法：.\scripts\test-live.ps1            # 跑全部联调测试
 #       .\scripts\test-live.ps1 -Test OrderAgentLiveTest   # 只跑某一个
 param([string]$Test = "")
