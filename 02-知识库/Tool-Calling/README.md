@@ -11,6 +11,7 @@
 
 ## 每日笔记
 - [Day 1：Function Calling 原理（已完成）](Day1-Function-Calling原理.md)
+- [Day 2：第一个 Java Tool（已完成）](Day2-第一个Java-Tool.md)
 
 ## 常用官方资料
 - LangChain4j Tools：https://docs.langchain4j.dev/tutorials/tools
