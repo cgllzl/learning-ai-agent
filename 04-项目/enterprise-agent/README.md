@@ -93,6 +93,9 @@ data:[DONE]
 | `DEEPSEEK_API_KEY` | `.env`（不入库） | DeepSeek API Key，从 https://platform.deepseek.com 获取 |
 | `deepseek.base-url` | `application.yml` | 默认 `https://api.deepseek.com` |
 | `deepseek.model` | `application.yml` | 默认 `deepseek-chat` |
+| `deepseek.timeout` | `application.yml` | 单次请求超时，默认 `30s` |
+| `deepseek.max-retries` | `application.yml` | 失败重试次数，默认 `2`（指数退避） |
+| `deepseek.fallback-model` | `application.yml` | 备用模型（重试仍失败时降级），默认同主模型 |
 | 服务端口 | `application.yml` | 默认 `8080` |
 
 ## 目录结构
@@ -111,6 +114,15 @@ src/main/java/com/enterprise/agent/
 scripts/run-dev.ps1                   本地启动脚本（读取 .env）
 scripts/install-docker.ps1            一键安装 Docker Desktop（需管理员）
 ```
+
+## 容错设计（Day 5）
+
+- **重试**：可重试错误（5xx、429、网络/超时）按指数退避重试，次数由 `max-retries` 控制。
+- **超时**：每次请求超时由 `timeout` 配置（作用于模型 Bean）。
+- **降级**：主模型重试仍失败时，切到 `fallback-model` 备用模型再试。
+- **不可重试错误**（400 参数错误、401 认证失败）不重试、不降级，直接返回错误。
+- 全部失败 → HTTP 503 `{"error":"AI 服务不可用…"}`；流式接口保持 `[ERROR]` SSE 事件。
+- 核心实现：`ResilientCaller`（`src/main/java/com/enterprise/agent/chat/ResilientCaller.java`）。
 
 ## 测试
 

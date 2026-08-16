@@ -25,6 +25,12 @@ public class ChatExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("error", message));
     }
 
+    @ExceptionHandler(AiServiceUnavailableException.class)
+    public ResponseEntity<Map<String, Object>> handleUnavailable(AiServiceUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleOther(Exception ex) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)

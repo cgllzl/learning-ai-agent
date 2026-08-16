@@ -6,12 +6,13 @@ import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 真实 DeepSeek 结构化输出联调测试（json_object 兼容模式）。
+ * 真实 DeepSeek 结构化输出联调测试（json_object 兼容模式，走 ResilientCaller 容错链路）。
  * 默认跳过；本地联调时设置环境变量 DEEPSEEK_API_KEY 后运行：
  *   mvn test -Dtest=StructuredChatServiceLiveTest
  */
@@ -68,11 +69,16 @@ class StructuredChatServiceLiveTest {
     }
 
     private StructuredChatService newService() {
-        OpenAiChatModel model = OpenAiChatModel.builder()
-                .baseUrl("https://api.deepseek.com")
-                .apiKey(System.getenv("DEEPSEEK_API_KEY"))
-                .modelName("deepseek-chat")
-                .build();
-        return new StructuredChatService(model, new ObjectMapper());
+        String key = System.getenv("DEEPSEEK_API_KEY");
+        DeepSeekProperties props = new DeepSeekProperties(
+                key, "https://api.deepseek.com", "deepseek-chat",
+                Duration.ofSeconds(60), 2, "deepseek-chat");
+        OpenAiChatModel primary = OpenAiChatModel.builder()
+                .baseUrl(props.baseUrl()).apiKey(props.apiKey())
+                .modelName(props.model()).timeout(props.timeout()).build();
+        OpenAiChatModel fallback = OpenAiChatModel.builder()
+                .baseUrl(props.baseUrl()).apiKey(props.apiKey())
+                .modelName(props.fallbackModel()).timeout(props.timeout()).build();
+        return new StructuredChatService(new ResilientCaller(props, primary, fallback), new ObjectMapper());
     }
 }

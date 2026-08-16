@@ -16,3 +16,6 @@ deepseek:
   api-key: ${DEEPSEEK_API_KEY:}
   base-url: https://api.deepseek.com
   model: deepseek-chat
+  timeout: 30s
+  max-retries: 2
+  fallback-model: deepseek-chat

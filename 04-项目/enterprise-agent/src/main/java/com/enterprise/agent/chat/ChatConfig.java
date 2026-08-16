@@ -16,6 +16,17 @@ public class ChatConfig {
                 .baseUrl(props.baseUrl())
                 .apiKey(props.apiKey())
                 .modelName(props.model())
+                .timeout(props.timeout())
+                .build();
+    }
+
+    @Bean
+    OpenAiChatModel openAiChatModelFallback(DeepSeekProperties props) {
+        return OpenAiChatModel.builder()
+                .baseUrl(props.baseUrl())
+                .apiKey(props.apiKey())
+                .modelName(props.fallbackModel())
+                .timeout(props.timeout())
                 .build();
     }
 
@@ -25,6 +36,7 @@ public class ChatConfig {
                 .baseUrl(props.baseUrl())
                 .apiKey(props.apiKey())
                 .modelName(props.model())
+                .timeout(props.timeout())
                 .build();
     }
 }

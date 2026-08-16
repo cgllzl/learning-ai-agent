@@ -11,7 +11,6 @@ import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
 import dev.langchain4j.model.chat.request.json.JsonSchema;
 import dev.langchain4j.model.chat.request.json.JsonStringSchema;
 import dev.langchain4j.model.chat.response.ChatResponse;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +18,11 @@ import java.util.List;
 @Service
 public class StructuredChatService {
 
-    private final OpenAiChatModel chatModel;
+    private final ResilientCaller resilientCaller;
     private final ObjectMapper objectMapper;
 
-    public StructuredChatService(OpenAiChatModel chatModel, ObjectMapper objectMapper) {
-        this.chatModel = chatModel;
+    public StructuredChatService(ResilientCaller resilientCaller, ObjectMapper objectMapper) {
+        this.resilientCaller = resilientCaller;
         this.objectMapper = objectMapper;
     }
 
@@ -39,7 +38,7 @@ public class StructuredChatService {
                 .responseFormat(responseFormat)
                 .build();
 
-        ChatResponse response = chatModel.chat(chatRequest);
+        ChatResponse response = resilientCaller.callWithFallback(model -> model.chat(chatRequest));
         AiMessage answer = response.aiMessage();
         if (answer == null || answer.text() == null || answer.text().isBlank()) {
             throw new IllegalStateException("模型未返回内容");
