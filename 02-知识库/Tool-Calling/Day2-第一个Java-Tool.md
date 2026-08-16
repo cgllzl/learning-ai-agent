@@ -2,6 +2,26 @@
 
 > Week 2 ｜ 归档：`05-记录/归档/2026-08-16-Week2-Day2-第一个Java-Tool.md` ｜ 代码：`com.enterprise.agent.agent`
 
+## 〇、流程总览（注册 + 调用）
+
+![Day 2 工具注册与调用流程](images/Day2-工具注册与调用流程.png)
+
+```mermaid
+flowchart TB
+    subgraph 注册阶段
+        A["Java 方法 getOrder"] -->|"@Tool/@P 注解"| B["AiServices 扫描"]
+        B --> C["生成 ToolSpecification"]
+        C --> D["注册给 LLM tools"]
+    end
+    subgraph 调用阶段
+        E["用户提问"] --> F["模型返回 tool_calls"]
+        F --> G["代理执行 getOrder"]
+        G --> H["真实结果回填"]
+        H --> I["模型最终回答"]
+    end
+    D --> E
+```
+
 ## 一、@Tool 注解：把 Java 方法变成模型可调用的工具
 
 ```java
