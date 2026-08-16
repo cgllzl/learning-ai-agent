@@ -1,6 +1,7 @@
 # 企业订单 Agent 实现（Week 2）
 
 > 归档：`05-记录/归档/2026-08-16-Week2-ToolCalling-Agent.md` ｜ 代码：`04-项目/enterprise-agent/src/main/java/com/enterprise/agent/agent/`
+> 按天笔记：`Day1-Function-Calling原理.md` ~ `Day5-修改订单状态与权限.md`（本文件为代码/接口速查）
 
 ## 一、什么是 Tool Calling
 
