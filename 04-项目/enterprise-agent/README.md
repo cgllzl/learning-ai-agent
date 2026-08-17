@@ -75,7 +75,7 @@ Content-Type: application/json
 { "message": "查询订单 O1001 的信息" }
 ```
 
-Agent 自动决定调用哪个工具（当前已注册：查订单），返回 `{ "reply": "..." }`。工具数据为内存模拟（`MockOrderData`）。
+Agent 自动决定调用哪个工具（当前已注册：查订单 / 查用户 / 查商品 / 查物流），返回 `{ "reply": "..." }`。工具数据为内存模拟（`MockOrderData`）。
 
 ### POST /chat/stream —— 流式对话（SSE，逐块返回）
 

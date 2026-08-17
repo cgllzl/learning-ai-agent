@@ -4,6 +4,12 @@ Content-Type: application/json
 
 { "message": "查询订单 O1001 的信息" }
 
+### 9) 订单 Agent：查物流 + 查用户
+POST http://localhost:8080/agent/order
+Content-Type: application/json
+
+{ "message": "帮我查一下订单 O1002 的物流，再查一下用户 U1 的信息" }
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 

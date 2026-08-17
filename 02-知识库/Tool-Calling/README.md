@@ -14,6 +14,7 @@
 - [Day 2：第一个 Java Tool（已完成）](Day2-第一个Java-Tool.md)
 - [Day 3：企业订单 Agent 查询接口（已完成）](Day3-订单查询Agent.md)
 - [Day 3：企业订单 Agent 查询接口（已完成）](Day3-订单查询Agent.md)
+- [Day 4：扩展查询用户/物流/商品（已完成）](Day4-查询用户物流商品.md)
 - [FAQ：常见疑问（模型在哪指定 / chat 是谁的 / 方法名）](FAQ-常见疑问.md)
 
 ## 常用官方资料

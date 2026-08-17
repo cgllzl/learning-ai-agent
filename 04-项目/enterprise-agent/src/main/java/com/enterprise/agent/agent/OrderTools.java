@@ -5,7 +5,7 @@ import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Component;
 
 /**
- * 企业订单 Agent 的工具集（Day 2：先实现第一个工具 getOrder）。
+ * 企业订单 Agent 的工具集（Day 4：查询订单 / 用户 / 商品 / 物流）。
  */
 @Component
 public class OrderTools {
@@ -24,5 +24,29 @@ public class OrderTools {
                         + "，商品 " + order.productId()
                         + "，金额 " + order.amount() + " 元，状态 " + order.status())
                 .orElse("未找到订单 " + orderId);
+    }
+
+    @Tool("根据用户 ID 查询用户信息")
+    public String getUser(@P("用户 ID，例如 U1") String userId) {
+        return data.findUserById(userId)
+                .map(user -> "用户 " + user.id() + "：" + user.name() + "，电话 " + user.phone())
+                .orElse("未找到用户 " + userId);
+    }
+
+    @Tool("根据商品 ID 查询商品信息")
+    public String getProduct(@P("商品 ID，例如 P1") String productId) {
+        return data.findProductById(productId)
+                .map(product -> "商品 " + product.id() + "：" + product.name()
+                        + "，价格 " + product.price() + " 元，库存 " + product.stock())
+                .orElse("未找到商品 " + productId);
+    }
+
+    @Tool("根据订单号查询物流信息")
+    public String getLogistics(@P("订单号，例如 O1002") String orderId) {
+        return data.findLogisticsByOrderId(orderId)
+                .map(logistics -> "订单 " + logistics.orderId() + " 物流：" + logistics.company()
+                        + "，运单号 " + logistics.trackingNo()
+                        + "，状态 " + logistics.status() + "，" + logistics.location())
+                .orElse("未找到订单 " + orderId + " 的物流信息");
     }
 }
