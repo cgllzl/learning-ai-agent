@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * 内存模拟的企业订单数据（Week 2 Day 4：订单 / 用户 / 商品 / 物流）。
+ * 内存模拟的企业订单数据（Week 2 Day 5：订单 / 用户 / 商品 / 物流 + 状态修改）。
  */
 @Component
 public class MockOrderData {
@@ -42,6 +42,11 @@ public class MockOrderData {
         orders.put("O1003", new Order("O1003", "U1", "P3", "PENDING", 59.0));
 
         logistics.put("O1002", new Logistics("O1002", "顺丰", "SF123456789", "运输中", "深圳转运中心"));
+    }
+
+    public void updateOrderStatus(String orderId, String newStatus) {
+        orders.computeIfPresent(orderId,
+                (id, order) -> new Order(order.id(), order.userId(), order.productId(), newStatus, order.amount()));
     }
 
     public Optional<Order> findOrderById(String id) {

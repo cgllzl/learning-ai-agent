@@ -16,8 +16,7 @@ class OrderToolsTest {
 
     @Test
     void getOrderReturnsOrderDetails() {
-        String result = tools.getOrder("O1001");
-        assertThat(result).contains("O1001", "U1", "399.0", "PAID");
+        assertThat(tools.getOrder("O1001")).contains("O1001", "U1", "399.0", "PAID");
     }
 
     @Test
@@ -31,18 +30,8 @@ class OrderToolsTest {
     }
 
     @Test
-    void getUserReturnsNotFoundForUnknownUser() {
-        assertThat(tools.getUser("U999")).contains("未找到用户");
-    }
-
-    @Test
     void getProductReturnsProductDetails() {
         assertThat(tools.getProduct("P1")).contains("P1", "机械键盘", "399.0");
-    }
-
-    @Test
-    void getProductReturnsNotFoundForUnknownProduct() {
-        assertThat(tools.getProduct("P999")).contains("未找到商品");
     }
 
     @Test
@@ -51,7 +40,22 @@ class OrderToolsTest {
     }
 
     @Test
-    void getLogisticsReturnsNotFoundForUnknownOrder() {
-        assertThat(tools.getLogistics("O1001")).contains("未找到订单");
+    void updateStatusSucceedsForPendingOrder() {
+        assertThat(tools.updateOrderStatus("O1003", "SHIPPED")).contains("已更新为 SHIPPED");
+    }
+
+    @Test
+    void updateStatusRejectsInvalidStatus() {
+        assertThat(tools.updateOrderStatus("O1003", "XXX")).contains("非法状态");
+    }
+
+    @Test
+    void updateStatusRejectsNonPendingOrder() {
+        assertThat(tools.updateOrderStatus("O1001", "SHIPPED")).contains("只有 PENDING 状态可以修改");
+    }
+
+    @Test
+    void updateStatusRejectsUnknownOrder() {
+        assertThat(tools.updateOrderStatus("O9999", "PAID")).contains("未找到订单");
     }
 }

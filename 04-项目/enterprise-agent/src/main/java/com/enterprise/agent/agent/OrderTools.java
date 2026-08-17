@@ -4,11 +4,15 @@ import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
- * 企业订单 Agent 的工具集（Day 4：查询订单 / 用户 / 商品 / 物流）。
+ * 企业订单 Agent 的工具集（Day 5：查询订单/用户/商品/物流 + 修改订单状态）。
  */
 @Component
 public class OrderTools {
+
+    private static final Set<String> VALID_STATUSES = Set.of("PAID", "SHIPPED", "DELIVERED", "CANCELLED");
 
     private final MockOrderData data;
 
@@ -48,5 +52,22 @@ public class OrderTools {
                         + "，运单号 " + logistics.trackingNo()
                         + "，状态 " + logistics.status() + "，" + logistics.location())
                 .orElse("未找到订单 " + orderId + " 的物流信息");
+    }
+
+    @Tool("修改订单状态。只有状态为 PENDING 的订单可以被修改；新状态必须是 PAID、SHIPPED、DELIVERED 或 CANCELLED 之一")
+    public String updateOrderStatus(@P("订单号") String orderId,
+                                    @P("新状态，可选 PAID/SHIPPED/DELIVERED/CANCELLED") String newStatus) {
+        if (!VALID_STATUSES.contains(newStatus)) {
+            return "非法状态 " + newStatus + "，允许值：PAID/SHIPPED/DELIVERED/CANCELLED";
+        }
+        MockOrderData.Order order = data.findOrderById(orderId).orElse(null);
+        if (order == null) {
+            return "未找到订单 " + orderId;
+        }
+        if (!"PENDING".equals(order.status())) {
+            return "订单 " + orderId + " 当前状态为 " + order.status() + "，只有 PENDING 状态可以修改";
+        }
+        data.updateOrderStatus(orderId, newStatus);
+        return "订单 " + orderId + " 状态已更新为 " + newStatus;
     }
 }

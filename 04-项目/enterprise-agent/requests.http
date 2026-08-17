@@ -10,6 +10,12 @@ Content-Type: application/json
 
 { "message": "帮我查一下订单 O1002 的物流，再查一下用户 U1 的信息" }
 
+### 10) 订单 Agent：修改订单状态
+POST http://localhost:8080/agent/order
+Content-Type: application/json
+
+{ "message": "把订单 O1003 的状态改为 SHIPPED" }
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 
