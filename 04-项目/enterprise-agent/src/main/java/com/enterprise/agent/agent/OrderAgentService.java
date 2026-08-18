@@ -10,10 +10,14 @@ public class OrderAgentService {
 
     private final OrderAssistant assistant;
 
-    public OrderAgentService(@Qualifier("openAiChatModel") OpenAiChatModel chatModel, OrderTools orderTools) {
+    public OrderAgentService(@Qualifier("openAiChatModel") OpenAiChatModel chatModel,
+                             OrderTools orderTools,
+                             AgentProperties agentProperties) {
         this.assistant = AiServices.builder(OrderAssistant.class)
                 .chatModel(chatModel)
                 .tools(orderTools)
+                // 最大连续工具调用次数：防止 Agent 陷入工具调用死循环
+                .maxSequentialToolsInvocations(agentProperties.maxSequentialToolsInvocations())
                 .build();
     }
 

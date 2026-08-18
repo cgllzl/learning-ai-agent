@@ -19,3 +19,7 @@ deepseek:
   timeout: 30s
   max-retries: 2
   fallback-model: deepseek-chat
+
+# Agent 配置（Week 2 Day 6：防死循环）
+agent:
+  max-sequential-tools-invocations: 3
