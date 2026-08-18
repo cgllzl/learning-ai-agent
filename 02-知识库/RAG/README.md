@@ -1,4 +1,4 @@
-﻿# RAG（检索增强生成）
+# RAG（检索增强生成）
 
 ## 核心概念
 - Embedding 与向量
@@ -21,4 +21,5 @@
 - 项目：Sprint 3 企业知识库
 
 ## 笔记列表
+- [Day 1：Embedding 与向量检索原理 + 选型（已完成）](Day1-Embedding与向量检索原理.md)
 - 

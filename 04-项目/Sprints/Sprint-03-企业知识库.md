@@ -1,5 +1,6 @@
-﻿# Sprint 3：企业知识库（RAG）
+# Sprint 3：企业知识库（RAG）
 
+> 状态：2026-08-18 ｜ Day 1 完成：原理与选型（学习期 InMemory + all-minilm，生产 Qdrant/pgvector）
 ## 目标
 让 Agent 基于企业内部文档回答问题并给出引用。
 
