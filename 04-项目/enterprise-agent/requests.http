@@ -25,6 +25,18 @@ Content-Type: application/json
   "content": "Java 21 引入了虚拟线程，可以显著提升高并发场景下的吞吐量。"
 }
 
+### 12) RAG 检索
+POST http://localhost:8080/rag/search
+Content-Type: application/json
+
+{ "query": "公司年假有几天？", "documentId": "HR-001", "maxResults": 3 }
+
+### 13) RAG 问答（检索 → 生成 + 引用）
+POST http://localhost:8080/rag/chat
+Content-Type: application/json
+
+{ "question": "公司年假有几天？", "documentId": "HR-001" }
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 

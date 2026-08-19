@@ -88,6 +88,28 @@ Content-Type: application/json
 
 返回 `{ "documentId": "...", "segmentCount": 2, "segmentIds": [...] }`。本地 Embedding 模型首次运行会下载约 90MB。
 
+### POST /rag/search —— RAG 相似度检索（可带元数据过滤）
+
+```http
+POST /rag/search
+Content-Type: application/json
+
+{ "query": "公司年假有几天？", "documentId": "HR-001", "maxResults": 3 }
+```
+
+返回最相似的片段：`{ "chunks": [{ "text": "...", "score": 0.87, "documentId": "HR-001" }] }`
+
+### POST /rag/chat —— RAG 问答（检索 → 生成 + 引用）
+
+```http
+POST /rag/chat
+Content-Type: application/json
+
+{ "question": "公司年假有几天？", "documentId": "HR-001" }
+```
+
+返回 `{ "answer": "根据资料[1]...", "sources": [...] }`。
+
 ### POST /chat/stream —— 流式对话（SSE，逐块返回）
 
 ```powershell

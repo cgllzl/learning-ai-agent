@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = RagIngestController.class)
+@RestControllerAdvice(assignableTypes = {RagIngestController.class, RagRetrieveController.class, RagChatController.class})
 public class RagExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
