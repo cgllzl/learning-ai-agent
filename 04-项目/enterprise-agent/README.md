@@ -77,6 +77,17 @@ Content-Type: application/json
 
 Agent 自动决定调用哪个工具（当前已注册：查订单 / 查用户 / 查商品 / 查物流），返回 `{ "reply": "..." }`。工具数据为内存模拟（`MockOrderData`）。
 
+### POST /rag/ingest —— RAG 文档入库（分块 → Embedding → 向量库）
+
+```http
+POST /rag/ingest
+Content-Type: application/json
+
+{ "documentId": "DOC1", "content": "Java 21 引入了虚拟线程……" }
+```
+
+返回 `{ "documentId": "...", "segmentCount": 2, "segmentIds": [...] }`。本地 Embedding 模型首次运行会下载约 90MB。
+
 ### POST /chat/stream —— 流式对话（SSE，逐块返回）
 
 ```powershell

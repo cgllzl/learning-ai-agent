@@ -16,6 +16,15 @@ Content-Type: application/json
 
 { "message": "把订单 O1003 的状态改为 SHIPPED" }
 
+### 11) RAG 文档入库
+POST http://localhost:8080/rag/ingest
+Content-Type: application/json
+
+{
+  "documentId": "DOC1",
+  "content": "Java 21 引入了虚拟线程，可以显著提升高并发场景下的吞吐量。"
+}
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 

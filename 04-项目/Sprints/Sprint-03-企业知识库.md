@@ -1,11 +1,11 @@
 # Sprint 3：企业知识库（RAG）
 
-> 状态：2026-08-18 ｜ Day 1 完成：原理与选型（学习期 InMemory + all-minilm，生产 Qdrant/pgvector）
+> 状态：2026-08-19 ｜ Day 2 完成：文档入库流程跑通（分块→Embedding→向量库）
 ## 目标
 让 Agent 基于企业内部文档回答问题并给出引用。
 
 ## 任务
-- [ ] 文档入库流程：分块 → Embedding → 写入向量库
+- [x] 文档入库流程：分块 → Embedding → 写入向量库
 - [ ] 相似度检索 + 元数据过滤
 - [ ] RAG 问答链路：检索 → 拼 Prompt → 生成 + 引用
 - [ ] Reranking / Hybrid Search

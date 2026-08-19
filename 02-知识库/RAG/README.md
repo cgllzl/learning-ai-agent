@@ -22,4 +22,5 @@
 
 ## 笔记列表
 - [Day 1：Embedding 与向量检索原理 + 选型（已完成）](Day1-Embedding与向量检索原理.md)
+- [Day 2：文档入库（分块→Embedding→写入）（已完成）](Day2-文档入库-分块-Embedding.md)
 - 
