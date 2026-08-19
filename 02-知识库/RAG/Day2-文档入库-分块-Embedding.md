@@ -86,3 +86,36 @@ public IngestionResult ingest(String documentId, String content, Map<String, Obj
 
 - [x] 文档能分块 → Embedding → 写入向量库
 - [x] 真实本地 Embedding 模型跑通（实测分块数 2）
+
+## 九、如何本地测试
+
+### 1. 单测（最快，不下载模型）
+```powershell
+cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
+mvn test -Dtest=DocumentIngestionServiceTest,RagIngestControllerTest
+```
+用 mock 的 Embedding，验证分块、元数据、入库逻辑与接口校验，秒级跑完。
+
+### 2. 真实本地模型入库（首次下载约 90MB）
+```powershell
+.\scripts\test-rag-live.ps1
+```
+脚本会自动：强制控制台 UTF-8（解决中文乱码）、设置 `RUN_ONNX_TESTS=1`、运行 `RagIngestionLiveTest`。输出里能看到 `[入库结果] 分块数 = N`。
+
+### 3. 手动 HTTP 体验
+```powershell
+.\scripts\run-dev.ps1   # 先启动服务
+```
+然后 Apifox / IDEA 的 requests.http 发：
+```http
+POST http://localhost:8080/rag/ingest
+Content-Type: application/json
+
+{ "documentId": "DOC1", "content": "Java 21 引入了虚拟线程……" }
+```
+返回 `{"documentId":"DOC1","segmentCount":1,"segmentIds":["..."]}`。
+
+### 注意
+- 当前是内存向量库，重启服务后数据丢失，属预期行为。
+- 检索查询接口是 Day 3 内容，Day 2 只能验证「入库成功」。
+- 中文乱码的根因与解决：Windows PowerShell 5.1 控制台默认 GBK 输出，而 Maven/Java 输出 UTF-8；脚本内 `[Console]::OutputEncoding = UTF8` + `chcp 65001` 即可（已内置到 test-rag-live.ps1）。
