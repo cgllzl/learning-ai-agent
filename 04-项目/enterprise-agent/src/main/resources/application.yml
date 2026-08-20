@@ -5,6 +5,12 @@ spring:
   application:
     name: enterprise-agent
 
+  # 文件上传大小限制（RAG 文档入库）
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 management:
   endpoints:
     web:

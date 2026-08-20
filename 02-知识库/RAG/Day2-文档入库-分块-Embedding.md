@@ -119,3 +119,10 @@ Content-Type: application/json
 - 当前是内存向量库，重启服务后数据丢失，属预期行为。
 - 检索查询接口是 Day 3 内容，Day 2 只能验证「入库成功」。
 - 中文乱码的根因与解决：Windows PowerShell 5.1 控制台默认 GBK 输出，而 Maven/Java 输出 UTF-8；脚本内 `[Console]::OutputEncoding = UTF8` + `chcp 65001` 即可（已内置到 test-rag-live.ps1）。
+
+
+## 十、附：文件上传入库接口（multipart）
+
+- `POST /rag/ingest/file`：multipart 上传，`file` 字段选本地 txt/md，可选 `documentId`（不填用文件名），单文件上限 10MB。
+- 实现：`RagIngestFileController`——校验扩展名（txt/md/markdown）→ 读 UTF-8 文本 → 复用 `DocumentIngestionService` 入库，并在元数据里记 `fileName`。
+- 测试：`RagIngestFileControllerTest` 4 个用例（txt 派生 id / md 指定 id / 拒绝非文本类型 / 拒绝空文件）。

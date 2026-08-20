@@ -7,8 +7,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = {RagIngestController.class, RagRetrieveController.class, RagChatController.class})
+@RestControllerAdvice(assignableTypes = {
+        RagIngestController.class,
+        RagIngestFileController.class,
+        RagRetrieveController.class,
+        RagChatController.class})
 public class RagExceptionHandler {
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {

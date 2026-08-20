@@ -88,6 +88,10 @@ Content-Type: application/json
 
 返回 `{ "documentId": "...", "segmentCount": 2, "segmentIds": [...] }`。本地 Embedding 模型首次运行会下载约 90MB。
 
+### POST /rag/ingest/file —— 文件上传入库（multipart，支持 txt/md）
+
+Apifox：选 multipart/form-data，字段 `file` 选本地 txt/md 文件，可选 `documentId`（不填则用文件名）。单文件上限 10MB。
+
 ### POST /rag/search —— RAG 相似度检索（可带元数据过滤）
 
 ```http

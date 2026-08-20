@@ -37,6 +37,21 @@ Content-Type: application/json
 
 { "question": "公司年假有几天？", "documentId": "HR-001" }
 
+### 14) RAG 文件上传入库（multipart，支持 txt/md，把 < 后面的路径换成你的文件）
+POST http://localhost:8080/rag/ingest/file
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="年假制度.txt"
+Content-Type: text/plain
+
+< C:\docs\年假制度.txt
+--WebAppBoundary
+Content-Disposition: form-data; name="documentId"
+
+HR-001
+--WebAppBoundary--
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 
