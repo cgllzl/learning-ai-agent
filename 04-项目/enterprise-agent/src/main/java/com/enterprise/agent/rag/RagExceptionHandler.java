@@ -11,7 +11,8 @@ import java.util.Map;
         RagIngestController.class,
         RagIngestFileController.class,
         RagRetrieveController.class,
-        RagChatController.class})
+        RagChatController.class,
+        RagHybridSearchController.class})
 public class RagExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)

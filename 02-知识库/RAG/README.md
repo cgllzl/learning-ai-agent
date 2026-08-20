@@ -25,4 +25,5 @@
 - [Day 2：文档入库（分块→Embedding→写入）（已完成）](Day2-文档入库-分块-Embedding.md)
 - [Day 3：相似度检索与元数据过滤（已完成）](Day3-相似度检索与元数据过滤.md)
 - [Day 4：RAG 问答链路（已完成）](Day4-RAG问答链路.md)
+- [Day 5：Reranking 与 Hybrid Search（已完成）](Day5-Reranking与HybridSearch.md)
 - 

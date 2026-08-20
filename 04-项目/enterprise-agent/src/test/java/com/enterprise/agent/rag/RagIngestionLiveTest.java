@@ -22,7 +22,7 @@ class RagIngestionLiveTest {
     void ingestsWithRealLocalEmbeddingModel() {
         EmbeddingModel embeddingModel = new AllMiniLmL6V2EmbeddingModel();
         InMemoryEmbeddingStore<TextSegment> embeddingStore = new InMemoryEmbeddingStore<>();
-        DocumentIngestionService service = new DocumentIngestionService(embeddingModel, embeddingStore);
+        DocumentIngestionService service = new DocumentIngestionService(embeddingModel, embeddingStore, new InMemoryCorpus());
 
         String content = "Java 21 引入了虚拟线程，可以显著提升高并发场景下的吞吐量。".repeat(10);
         IngestionResult result = service.ingest("DOC-REAL", content, null);

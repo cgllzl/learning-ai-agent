@@ -103,6 +103,17 @@ Content-Type: application/json
 
 返回最相似的片段：`{ "chunks": [{ "text": "...", "score": 0.87, "documentId": "HR-001" }] }`
 
+### POST /rag/hybrid-search —— RAG 混合检索（向量 + 关键词 + RRF）
+
+```http
+POST /rag/hybrid-search
+Content-Type: application/json
+
+{ "query": "公司年假有几天？", "documentId": "HR-001", "maxResults": 3 }
+```
+
+返回融合重排后的片段列表（`chunks`）。
+
 ### POST /rag/chat —— RAG 问答（检索 → 生成 + 引用）
 
 ```http

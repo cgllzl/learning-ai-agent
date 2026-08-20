@@ -52,6 +52,12 @@ Content-Disposition: form-data; name="documentId"
 HR-001
 --WebAppBoundary--
 
+### 15) RAG 混合检索（向量 + 关键词 + RRF）
+POST http://localhost:8080/rag/hybrid-search
+Content-Type: application/json
+
+{ "query": "公司年假有几天？", "documentId": "HR-001", "maxResults": 3 }
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 

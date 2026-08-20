@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RAG 问答链路（Week 3 Day 4）：检索 → 拼 Prompt → 生成 + 引用。
+ * RAG 问答链路（Week 3 Day 4；Day 5 改用 Hybrid Search）。
  */
 @Service
 public class RagQaService {
@@ -24,17 +24,17 @@ public class RagQaService {
             如果参考资料里没有答案，请直接说明"资料中没有相关内容"。
             回答用中文，简洁准确。""";
 
-    private final DocumentRetrievalService retrievalService;
+    private final HybridSearchService hybridSearchService;
     private final ResilientCaller resilientCaller;
 
-    public RagQaService(DocumentRetrievalService retrievalService, ResilientCaller resilientCaller) {
-        this.retrievalService = retrievalService;
+    public RagQaService(HybridSearchService hybridSearchService, ResilientCaller resilientCaller) {
+        this.hybridSearchService = hybridSearchService;
         this.resilientCaller = resilientCaller;
     }
 
     public RagChatResponse ask(String question, String documentId, Integer maxResults) {
-        // 1. 检索：取相关片段（默认 5 条）
-        List<RetrievedChunk> chunks = retrievalService.retrieve(
+        // 1. 混合检索（向量 + 关键词 + RRF 重排）
+        List<RetrievedChunk> chunks = hybridSearchService.search(
                 question, documentId, maxResults, 0.0);
 
         // 2. 拼 Prompt：编号后的参考资料 + 问题

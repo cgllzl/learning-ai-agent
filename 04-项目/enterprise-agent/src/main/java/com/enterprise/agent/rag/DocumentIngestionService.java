@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 文档入库（Week 3 Day 2）：分块 → Embedding → 写入向量库。
+ * 文档入库（Week 3 Day 2，Day 5 增加关键词索引）：分块 → Embedding → 写入向量库 + 关键词语料。
  */
 @Service
 public class DocumentIngestionService {
@@ -25,11 +25,13 @@ public class DocumentIngestionService {
 
     private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> embeddingStore;
+    private final InMemoryCorpus corpus;
     private final DocumentSplitter splitter = DocumentSplitters.recursive(CHUNK_SIZE, CHUNK_OVERLAP);
 
-    public DocumentIngestionService(EmbeddingModel embeddingModel, EmbeddingStore<TextSegment> embeddingStore) {
+    public DocumentIngestionService(EmbeddingModel embeddingModel, EmbeddingStore<TextSegment> embeddingStore, InMemoryCorpus corpus) {
         this.embeddingModel = embeddingModel;
         this.embeddingStore = embeddingStore;
+        this.corpus = corpus;
     }
 
     public IngestionResult ingest(String documentId, String content, Map<String, Object> metadata) {
@@ -46,8 +48,9 @@ public class DocumentIngestionService {
         Response<List<Embedding>> response = embeddingModel.embedAll(segments);
         List<Embedding> embeddings = response.content();
 
-        // 3. 写入向量库：每个片段一个向量，返回自动生成的 id
+        // 3. 写入向量库 + 同步写入关键词语料（供 Hybrid Search）
         List<String> segmentIds = embeddingStore.addAll(embeddings, segments);
+        corpus.addAll(segments);
 
         return new IngestionResult(documentId, segments.size(), segmentIds);
     }

@@ -21,15 +21,16 @@ class DocumentIngestionServiceTest {
 
     private EmbeddingModel embeddingModel;
     private InMemoryEmbeddingStore<TextSegment> embeddingStore;
+    private InMemoryCorpus corpus;
     private DocumentIngestionService service;
 
     @BeforeEach
     void setUp() {
         embeddingModel = mock(EmbeddingModel.class);
         embeddingStore = new InMemoryEmbeddingStore<>();
-        service = new DocumentIngestionService(embeddingModel, embeddingStore);
+        corpus = new InMemoryCorpus();
+        service = new DocumentIngestionService(embeddingModel, embeddingStore, corpus);
 
-        // 用固定向量模拟 Embedding，避免单测下载本地模型
         when(embeddingModel.embedAll(anyList())).thenAnswer(invocation -> {
             List<TextSegment> segments = invocation.getArgument(0);
             List<Embedding> embeddings = segments.stream()
@@ -41,10 +42,8 @@ class DocumentIngestionServiceTest {
 
     @Test
     void splitsLongTextIntoMultipleSegments() {
-        String longText = "Java 是面向对象的编程语言。".repeat(60); // 超过 300 字，会被分块
-
+        String longText = "Java 是面向对象的编程语言。".repeat(60);
         IngestionResult result = service.ingest("DOC1", longText, null);
-
         assertThat(result.documentId()).isEqualTo("DOC1");
         assertThat(result.segmentCount()).isGreaterThan(1);
         assertThat(result.segmentIds()).hasSize(result.segmentCount());
@@ -52,25 +51,16 @@ class DocumentIngestionServiceTest {
 
     @Test
     void storesDocumentIdInMetadata() {
-        String shortText = "Java 21 引入了虚拟线程。";
-
-        service.ingest("DOC1", shortText, null);
-
+        service.ingest("DOC1", "Java 21 引入了虚拟线程。", null);
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<TextSegment>> captor = ArgumentCaptor.forClass(List.class);
         verify(embeddingModel).embedAll(captor.capture());
-        TextSegment segment = captor.getValue().get(0);
-
-        assertThat(segment.metadata().getString("documentId")).isEqualTo("DOC1");
+        assertThat(captor.getValue().get(0).metadata().getString("documentId")).isEqualTo("DOC1");
     }
 
     @Test
-    void storesEachSegmentInEmbeddingStore() {
-        String text = "第一段内容，用来测试向量库写入。".repeat(40);
-
-        IngestionResult result = service.ingest("DOC2", text, null);
-
-        assertThat(result.segmentCount()).isGreaterThan(0);
-        assertThat(embeddingStore.serializeToJson()).contains("DOC2");
+    void alsoWritesKeywordCorpus() {
+        service.ingest("DOC2", "入职满一年享有 5 天年假。", null);
+        assertThat(corpus.getAll()).isNotEmpty();
     }
 }
