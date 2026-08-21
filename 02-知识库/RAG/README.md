@@ -26,4 +26,5 @@
 - [Day 3：相似度检索与元数据过滤（已完成）](Day3-相似度检索与元数据过滤.md)
 - [Day 4：RAG 问答链路（已完成）](Day4-RAG问答链路.md)
 - [Day 5：Reranking 与 Hybrid Search（已完成）](Day5-Reranking与HybridSearch.md)
+- [Day 6：RAG 评估用例（已完成）](Day6-RAG评估用例.md)
 - 
