@@ -5,6 +5,7 @@ public record RagEvalMetrics(
         int recallHits,
         int citationHits,
         double recallRate,
-        double citationAccuracy
+        double citationAccuracy,
+        double citationPrecision
 ) {
 }

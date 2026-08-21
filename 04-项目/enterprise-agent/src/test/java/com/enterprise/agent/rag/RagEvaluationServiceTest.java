@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 class RagEvaluationServiceTest {
 
     @Test
-    void computesRecallAndCitationMetrics() {
+    void computesRecallCitationAndPrecisionMetrics() {
         RagQaService ragQaService = mock(RagQaService.class);
         when(ragQaService.ask(any(), any(), any())).thenAnswer(invocation -> {
             String question = invocation.getArgument(0);
@@ -20,8 +20,10 @@ class RagEvaluationServiceTest {
                 return new RagChatResponse("根据 [1] 的回答。",
                         List.of(new RetrievedChunk("年假 5 天", 0.9, "HR-001")));
             }
-            return new RagChatResponse("根据 [1] 的回答。",
-                    List.of(new RetrievedChunk("报销超 500 需审批", 0.9, "FIN-001")));
+            return new RagChatResponse("根据 [1] 和 [2] 的回答。",
+                    List.of(
+                            new RetrievedChunk("报销超 500 需审批", 0.9, "FIN-001"),
+                            new RetrievedChunk("发票当月提交", 0.8, "FIN-001")));
         });
 
         RagEvaluationService service = new RagEvaluationService(ragQaService);
@@ -32,5 +34,6 @@ class RagEvaluationServiceTest {
         assertThat(metrics.total()).isEqualTo(2);
         assertThat(metrics.recallRate()).isEqualTo(1.0);
         assertThat(metrics.citationAccuracy()).isEqualTo(1.0);
+        assertThat(metrics.citationPrecision()).isEqualTo(1.0);
     }
 }

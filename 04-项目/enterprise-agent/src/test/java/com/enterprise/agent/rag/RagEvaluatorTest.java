@@ -25,22 +25,46 @@ class RagEvaluatorTest {
     }
 
     @Test
-    void citationCorrectWhenCitedSourceMatches() {
-        String answer = "根据 [1]，入职满一年享有 5 天年假。";
-        assertThat(RagEvaluator.citationCorrect(answer, SOURCES, "HR-001")).isTrue();
+    void citationCorrectWhenAllCitationsPointToExpectedDocument() {
+        List<RetrievedChunk> multiSame = List.of(
+                new RetrievedChunk("片段 A", 0.9, "HR-001"),
+                new RetrievedChunk("片段 B", 0.8, "HR-001"));
+        assertThat(RagEvaluator.citationCorrect("根据 [1] 和 [2] 的回答。", multiSame, "HR-001")).isTrue();
     }
 
     @Test
-    void citationIncorrectWhenCitedSourceDoesNotMatch() {
-        String answer = "根据 [1] 和 [2] 的回答。";
-        assertThat(RagEvaluator.citationCorrect(answer, SOURCES, "IT-001")).isFalse();
+    void citationIncorrectWhenAnyCitationIsWrong() {
+        // [1] 是 HR-001、[2] 是 FIN-001；期望 HR-001，但 [2] 错了 → 严格模式判错
+        assertThat(RagEvaluator.citationCorrect("根据 [1] 和 [2] 的回答。", SOURCES, "HR-001")).isFalse();
+    }
+
+    @Test
+    void citationIncorrectWhenNoCitationOrOutOfRange() {
+        assertThat(RagEvaluator.citationCorrect("没有任何引用。", SOURCES, "HR-001")).isFalse();
+        assertThat(RagEvaluator.citationCorrect("越界引用 [9]。", SOURCES, "HR-001")).isFalse();
+    }
+
+    @Test
+    void citationPrecisionComputesRatio() {
+        List<RetrievedChunk> sources = List.of(
+                new RetrievedChunk("A", 0.9, "FIN-001"),
+                new RetrievedChunk("B", 0.8, "FIN-001"),
+                new RetrievedChunk("C", 0.7, "IT-001"));
+        // [1]、[2] 命中 FIN-001，[3] 是 IT-001 → 2/3
+        assertThat(RagEvaluator.citationPrecision("参考 [1] [2] [3]", sources, "FIN-001")).isEqualTo(2.0 / 3.0);
+    }
+
+    @Test
+    void citationPrecisionIsZeroWithoutCitations() {
+        assertThat(RagEvaluator.citationPrecision("没有引用", SOURCES, "HR-001")).isEqualTo(0.0);
     }
 
     @Test
     void metricsComputesRates() {
-        RagEvalMetrics metrics = RagEvaluator.metrics(4, 3, 2);
+        RagEvalMetrics metrics = RagEvaluator.metrics(4, 3, 2, 0.5);
         assertThat(metrics.total()).isEqualTo(4);
         assertThat(metrics.recallRate()).isEqualTo(0.75);
         assertThat(metrics.citationAccuracy()).isEqualTo(0.5);
+        assertThat(metrics.citationPrecision()).isEqualTo(0.5);
     }
 }
