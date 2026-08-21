@@ -90,3 +90,10 @@ RagEvalMetrics[total=3, recallHits=3, citationHits=3,
 
 - [x] 建立 RAG 评估用例
 - [x] 能衡量召回（recall@K）、严格引用正确率、引用精确率
+
+
+## 七、HTTP 评估工作流（便于用自己上传的文件测）
+
+1. 上传文档：`POST /rag/ingest/file`（multipart，txt/md，可传多篇，documentId 不填则用文件名）。
+2. 跑评估：`POST /rag/evaluate`，Body 传 cases（每项 question + expectedDocumentId）。
+3. 返回 `RagEvalMetrics`（total / recallRate / citationAccuracy / citationPrecision）。

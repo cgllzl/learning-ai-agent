@@ -103,6 +103,19 @@ Content-Type: application/json
 
 返回最相似的片段：`{ "chunks": [{ "text": "...", "score": 0.87, "documentId": "HR-001" }] }`
 
+### POST /rag/evaluate —— RAG 评估（召回 + 引用）
+
+先用 `POST /rag/ingest/file` 上传文档，再发：
+
+```http
+POST /rag/evaluate
+Content-Type: application/json
+
+{ "cases": [ { "question": "年假有几天？", "expectedDocumentId": "HR-001" } ] }
+```
+
+返回 `{ total, recallHits, citationHits, recallRate, citationAccuracy, citationPrecision }`。
+
 ### POST /rag/hybrid-search —— RAG 混合检索（向量 + 关键词 + RRF）
 
 ```http

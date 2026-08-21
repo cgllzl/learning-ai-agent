@@ -58,6 +58,17 @@ Content-Type: application/json
 
 { "query": "公司年假有几天？", "documentId": "HR-001", "maxResults": 3 }
 
+### 16) RAG 评估（先上传文档，再评估召回/引用）
+POST http://localhost:8080/rag/evaluate
+Content-Type: application/json
+
+{
+  "cases": [
+    { "question": "年假有几天？", "expectedDocumentId": "HR-001" },
+    { "question": "报销超过多少钱需要审批？", "expectedDocumentId": "FIN-001" }
+  ]
+}
+
 ### 1) 健康检查（预期 {"status":"UP"}）
 GET http://localhost:8080/actuator/health
 
