@@ -29,12 +29,15 @@ public class RagEvaluationService {
         for (RagEvalCase evalCase : cases) {
             RagChatResponse response = ragQaService.ask(evalCase.question(), null, DEFAULT_MAX_RESULTS);
 
+            // 召回数和引用数和用户输入的case数有关
             if (RagEvaluator.recallAtK(response.sources(), evalCase.expectedDocumentId(), DEFAULT_K)) {
                 recallHits++;
             }
             if (RagEvaluator.citationCorrect(response.answer(), response.sources(), evalCase.expectedDocumentId())) {
                 citationHits++;
             }
+
+            // 总召回数和总正确引用数和大模型返回的结果有关
             totalCitations += RagEvaluator.citationCount(response.answer());
             totalCorrectCitations += RagEvaluator.correctCitationCount(
                     response.answer(), response.sources(), evalCase.expectedDocumentId());
