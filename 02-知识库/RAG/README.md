@@ -10,6 +10,8 @@
 - Citation（引用来源）
 - RAG Evaluation（评估）
 
+- [Week 3 学习总结（路线图 + 语法速查）](Week3-学习总结.md)
+
 ## 常用官方资料
 - LangChain4j RAG：https://docs.langchain4j.dev/tutorials/rag
 - pgvector：https://github.com/pgvector/pgvector
