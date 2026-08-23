@@ -1,4 +1,4 @@
-﻿# Agent 编排（Orchestration）
+# Agent 编排（Orchestration）
 
 ## 核心概念
 - Single-Agent vs Multi-Agent
@@ -18,4 +18,5 @@
 - 项目：Sprint 6 Multi-Agent
 
 ## 笔记列表
+- [Day 1：Orchestration 模式 + 编排图（已完成）](Day1-Orchestration模式.md)
 - 
