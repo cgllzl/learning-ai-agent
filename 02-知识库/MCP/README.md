@@ -1,4 +1,4 @@
-﻿# MCP（Model Context Protocol）
+# MCP（Model Context Protocol）
 
 ## 核心概念
 - MCP 是什么、为什么出现
@@ -20,4 +20,5 @@
 - 项目：Sprint 5 MCP Client
 
 ## 笔记列表
+- [Day 2：MCP 协议与 Server（已完成）](Day2-MCP协议与Server.md)
 - 
