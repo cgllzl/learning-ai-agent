@@ -130,3 +130,28 @@ McpSchema.CallToolResult.builder(List.of(new McpSchema.TextContent("5"))).build(
 
 ### 9. `record`（前几周已出现）
 `Tool`、`JsonSchema`、`CallToolResult` 都是 record：不可变数据类，字段自动生成访问方法（如 `tool.name()`）。不用手写 getter/setter。
+
+## 八、SimpleMcpServer 构造方法参数讲解
+
+```java
+// 1) 配"翻译官"：JSON 和 Java 对象互转
+McpJsonMapper mapper = new JacksonMcpJsonMapper(JsonMapper.builder().build());
+
+// 2) 配"听筒 + 话筒"：stdio 通过输入/输出流收发消息
+StdioServerTransportProvider transport = new StdioServerTransportProvider(
+        mapper,                                  // 上面的翻译官
+        new ByteArrayInputStream(new byte[0]),   // 输入流（听筒），空数据占位
+        new ByteArrayOutputStream());            // 输出流（话筒），消息先攒在这里
+
+// 3) 组装 Server + 注册工具
+this.server = McpServer.sync(transport)
+        .serverInfo("enterprise-tools", "1.0.0")  // 自我介绍：名字 + 版本
+        .toolCall(addTool(), this::add)           // 注册工具：说明书 + 干活函数
+        .build();                                 // 真正组装出 McpSyncServer
+```
+
+- `JacksonMcpJsonMapper(JsonMapper.builder().build())`：Jackson 负责 JSON 编解码；builder→build 是 Jackson 的惯用写法。
+- `StdioServerTransportProvider(mapper, in, out)`：stdio 传输，通过输入流收消息、输出流发消息；真实运行时应传 `System.in` / `System.out`，学习期用空流占位。
+- `.serverInfo(name, version)`：握手时告诉客户端"我是谁"。
+- `.toolCall(工具说明书, 处理函数)`：注册工具，说明书是给模型看的，处理函数是真正执行的。
+- `.build()`：把前面配置组装成可用的 `McpSyncServer`。
