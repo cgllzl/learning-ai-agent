@@ -75,3 +75,58 @@ private McpSchema.CallToolResult add(McpSyncServerExchange exchange, McpSchema.C
 
 - [x] 理解 MCP 协议概念（Client/Server/Tools/Resources/Prompts/JSON-RPC/生命周期/授权）
 - [x] 跑通一个 MCP Server（注册工具并验证逻辑）
+
+## 七、新语法通俗讲解
+
+### 1. 链式调用（Builder / Fluent API）
+`McpServer.sync(transport).serverInfo(...).toolCall(...).build()` 这种「一路点下去」的写法叫链式调用：每个方法都返回自己（return this），所以能连续调用，最后 `build()` 才真正组装出对象。类比点菜：你一项项勾选（serverInfo、toolCall），最后说「下单」（build）。
+
+### 2. `Map.of(...)` 和 `List.of(...)`
+Java 9 之后快速造「写死不动」的集合：
+```java
+Map.of("a", 1, "b", 2);      // 等价于一个只有 a/b 两个键的 Map
+List.of("x", "y");           // 两个元素的 List
+```
+好处是省去 `new HashMap` + 一次次 put；代价是这个集合不可修改。适合写配置、写测试数据。
+
+### 3. `McpSchema.Tool.builder("add")`
+`builder("add")` 是给工具**起名字**（"add"），后面的 `.description()` 写**它是干嘛的**，`.inputSchema()` 写**它要什么参数**，`build()` 收工。这个 Tool 对象就是交给模型看的「工具说明书」。
+
+### 4. JSON Schema：参数的身份证
+```java
+McpSchema.JsonSchema.builder()
+    .type("object")                              // 入参整体是个对象
+    .properties(Map.of("a", Map.of("type", "number")))  // 有哪些字段、各自什么类型
+    .required(List.of("a"))                      // 哪些必填
+    .build();
+```
+模型就是靠这份 Schema 知道「这个工具有参数 a、b，都是数字」才能填对参数。不用手写 JSON 字符串，用 Builder 拼。
+
+### 5. 处理函数：`(exchange, request) -> { ... }`
+这是一个 **Lambda 表达式**，等价于一个匿名函数。它接收两个参数：
+- `exchange`：会话上下文（Day 2 用不上，先忽略）
+- `request`：客户端发来的调用请求
+
+返回值是 `CallToolResult`（调用结果）。
+
+### 6. 从请求里取参数
+```java
+((Number) request.arguments().get("a")).intValue()
+```
+- `request.arguments()` 返回 `Map<String, Object>`——参数都是 Object 类型。
+- `(Number)` 是**强制类型转换**：告诉编译器「它其实是数字」。
+- `.intValue()` 把数字转成 int。
+
+### 7. 把结果包成 MCP 要求的格式
+```java
+McpSchema.CallToolResult.builder(List.of(new McpSchema.TextContent("5"))).build();
+```
+- `TextContent("5")`：把文本包成 MCP 认识的「内容」。
+- `List.of(...)`：内容是一个列表（可有多段）。
+- `CallToolResult.builder(列表).build()`：包成调用结果返回。
+
+### 8. 方法引用 `this::add`
+`this::add` 是 Lambda 的简写：`(exchange, request) -> add(exchange, request)` 可以缩写成 `this::add`，只要方法签名对得上。
+
+### 9. `record`（前几周已出现）
+`Tool`、`JsonSchema`、`CallToolResult` 都是 record：不可变数据类，字段自动生成访问方法（如 `tool.name()`）。不用手写 getter/setter。
