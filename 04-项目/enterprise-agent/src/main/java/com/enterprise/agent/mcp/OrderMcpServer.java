@@ -13,6 +13,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -31,16 +33,36 @@ public class OrderMcpServer {
     }
 
     public OrderMcpServer(OrderTools orderTools) {
+        this(orderTools, new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+    }
+
+    private OrderMcpServer(OrderTools orderTools, InputStream inputStream, OutputStream outputStream) {
         this.orderTools = orderTools;
 
         McpJsonMapper mapper = new JacksonMcpJsonMapper(JsonMapper.builder().build());
         StdioServerTransportProvider transport = new StdioServerTransportProvider(
-                mapper, new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+                mapper, inputStream, outputStream);
 
         this.server = McpServer.sync(transport)
                 .serverInfo("enterprise-order-tools", "1.0.0")
                 .toolCall(orderTool(), this::getOrder)
                 .build();
+    }
+
+    /**
+     * 以真实的 stdio 方式启动：stdin/stdout 对接 MCP 客户端。
+     * 供子进程方式启动（例如 {@code java com.enterprise.agent.mcp.OrderMcpServer}）。
+     */
+    public static OrderMcpServer stdio() {
+        return new OrderMcpServer(new OrderTools(new MockOrderData()), System.in, System.out);
+    }
+
+    public static void main(String[] args) {
+        // stdio 的 stdout 只能用来传输 JSON-RPC，因此把日志改到 stderr，避免污染协议流
+        System.setProperty("logback.configurationFile", "logback-mcp.xml");
+        stdio();
+        // 不要 join()：stdio 的收包线程是非守护线程，会维持 JVM 存活；
+        // 客户端关闭 stdin 后收包线程退出，进程随之自然结束。
     }
 
     public List<McpSchema.Tool> listTools() {

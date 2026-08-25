@@ -151,13 +151,16 @@ McpOrderAssistant assistant = AiServices.builder(McpOrderAssistant.class)
 String reply = assistant.chat("查询订单 O1001 的信息");
 ```
 
-- `InMemoryMcpClient` 是我们的「内存版 MCP 客户端」：它实现了 `McpClient` 接口（`listTools` / `executeTool`），但跳过了 JSON-RPC 传输，直接把调用委托给本地 `OrderTools`。这是为了在学习环境里看清整条链路；真实环境把它换成 `StdioMcpTransport` 或 `HttpMcpTransport` 即可。
-- 关键验证点：模型回复里的 `399` 只可能来自 `getOrder` 的返回值，说明**模型真的通过 MCP 通道调用了工具**，不是凭空编的。
+- 这里其实有两层验证，要分清楚，不然容易产生“这到底有没有真的用上 Server”的疑问：
+  - `InMemoryMcpClient` 是「内存版 MCP 客户端」：它实现了 `McpClient` 接口（`listTools` / `executeTool`），但跳过 JSON-RPC 传输，直接把调用委托给本地 `OrderTools`。它适合先看清「大模型 → AiServices → McpToolProvider → McpClient → 工具」这条链路的形状。
+  - `StdioMcpTransport` 是「真实传输层」：它会真的启动一个 `OrderMcpServer` 子进程，双方通过 stdin/stdout 交换 JSON-RPC 报文。`McpOrderLiveTest` 用的就是这一条，所以模型拿到的 `399` 是真的一路走完协议链路、由 Server 进程返回的。
+- 关键验证点：模型回复里的 `399` 只可能来自 `getOrder` 的返回值，说明**模型真的通过 MCP 协议调用了工具**，不是凭空编的。
 
 ### 验证
 
 - `InMemoryMcpClientTest`（2 个）：能列出 `getOrder`、能执行并返回订单数据。
-- `McpOrderLiveTest`（真实 DeepSeek）：问「查询订单 O1001」→ 回复带出 O1001 和 399，联动链路实测通过。
+- `OrderMcpServerStdioTest`（2 个，无需 DeepSeek Key）：真实启动 `OrderMcpServer` 子进程，用 `DefaultMcpClient + StdioMcpTransport` 列出工具、执行工具，验证 MCP 协议链路通。
+- `McpOrderLiveTest`（真实 DeepSeek）：问「查询订单 O1001」→ 回复带出 O1001 和 399，走真实 stdio 的联动链路实测通过。
 
 ## 九、如何本地测试
 
@@ -167,10 +170,41 @@ cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
 mvn test -Dtest=InMemoryMcpClientTest,OrderMcpServerTest,McpToolProviderTest,SimpleMcpServerTest
 ```
 
-2. 真实 LLM 联动（需要 DeepSeek Key，走 MCP 通道）：
+2. 真实 stdio 链路（无需 DeepSeek Key，但会真的启动 Server 子进程）：
+```powershell
+mvn test -Dtest=OrderMcpServerStdioTest
+```
+
+3. 真实 LLM 联动（需要 DeepSeek Key，走真实 MCP stdio 通道）：
 ```powershell
 .\scripts\test-live.ps1 -Test McpOrderLiveTest
 ```
-脚本自动读 `.env` 的 Key，输出里看 `[MCP 联动回答]` 是否包含 `O1001` 和 `399`。
+脚本自动读 `.env` 的 Key，输出里看 `[MCP stdio 联动回答]` 是否包含 `O1001` 和 `399`。
 
-3. IDEA 里右键测试类 Run；`McpOrderLiveTest` 需要在 Run Configuration 的 Environment variables 里配 `DEEPSEEK_API_KEY`。
+4. IDEA 里右键测试类 Run；`McpOrderLiveTest` 需要在 Run Configuration 的 Environment variables 里配 `DEEPSEEK_API_KEY`。
+
+## 十、真实 stdio 的两个坑（Day 4 补记）
+
+把测试从「内存版 Client」升级到「真实 stdio」时，会撞上两个很容易卡死/串数据的坑，这里记下来：
+
+### 1. stdout 只能传输 JSON-RPC，日志必须去 stderr
+
+MCP 的 stdio 传输规定：`stdin` 收请求、`stdout` 回响应，而且 `stdout` 上每一行都必须是 JSON-RPC 报文。可 Java 的 Logback 默认把 INFO 日志也打到 `stdout`，于是服务端刚启动，日志就和协议报文混在一起，客户端会报：
+
+```text
+Ignoring message received because it is not valid JSON: ...
+```
+
+解决办法是给 Server 子进程单独配一份 `logback-mcp.xml`，把 `ConsoleAppender` 的 `target` 设成 `System.err`。这样日志走错误流，协议流干干净净。`OrderMcpServer.main()` 里已经通过 `logback.configurationFile` 自动指定了这份配置。
+
+### 2. Server 的 main 不能 `join()` 死等
+
+一开始我很自然地在 `main()` 最后写：
+
+```java
+Thread.currentThread().join(); // 让主线程一直等，进程别退出
+```
+
+结果客户端 `close()` 时会卡在关闭 stdout 流这一步：库会先关 IO 流、再销毁进程，而 `join()` 让 Server 进程永远活着，导致「关流等进程退出 / 进程等流关闭」互相等死。
+
+正确做法是**让 main 正常返回**。Server 的收包线程是非守护线程，它会维持 JVM 存活；客户端关闭 stdin 后，收包线程读到 EOF 自动退出，进程也就自然结束。
