@@ -158,3 +158,19 @@ String reply = assistant.chat("查询订单 O1001 的信息");
 
 - `InMemoryMcpClientTest`（2 个）：能列出 `getOrder`、能执行并返回订单数据。
 - `McpOrderLiveTest`（真实 DeepSeek）：问「查询订单 O1001」→ 回复带出 O1001 和 399，联动链路实测通过。
+
+## 九、如何本地测试
+
+1. 接线测试（无需 Key，最快）：
+```powershell
+cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
+mvn test -Dtest=InMemoryMcpClientTest,OrderMcpServerTest,McpToolProviderTest,SimpleMcpServerTest
+```
+
+2. 真实 LLM 联动（需要 DeepSeek Key，走 MCP 通道）：
+```powershell
+.\scripts\test-live.ps1 -Test McpOrderLiveTest
+```
+脚本自动读 `.env` 的 Key，输出里看 `[MCP 联动回答]` 是否包含 `O1001` 和 `399`。
+
+3. IDEA 里右键测试类 Run；`McpOrderLiveTest` 需要在 Run Configuration 的 Environment variables 里配 `DEEPSEEK_API_KEY`。

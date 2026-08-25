@@ -19,4 +19,5 @@
 
 ## 笔记列表
 - [Day 1：Orchestration 模式 + 编排图（已完成）](Day1-Orchestration模式.md)
+- [Day 5：Supervisor 模式（已完成）](Day5-Supervisor模式.md)
 - 
