@@ -17,6 +17,10 @@
 
 - [x] 把一个现有 Tool 改造成 MCP Tool
 
+## 补充：LLM 联动
+- 新建 InMemoryMcpClient（实现 McpClient 接口）+ McpOrderAssistant，用 McpToolProvider 接进 AiServices。
+- 真实 DeepSeek 联调通过：问「查询订单 O1001」回复带出 399，证明模型真的通过 MCP 调用了工具。
+
 ## 下一步（Day 5）
 
 - 实现 Supervisor 模式：主 Agent 分派任务

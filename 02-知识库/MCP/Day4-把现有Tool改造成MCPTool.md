@@ -119,3 +119,42 @@ McpSyncServer server = McpServer.sync(transport)
 ## 七、Day 4 完成标准
 
 - [x] 把一个现有 Tool（getOrder）改造成 MCP Tool
+
+## 八、补上缺口：让大模型真的用上它
+
+光把工具挂上 MCP Server 还不够，你可能马上会问：「那大模型怎么用上它？」答案是再接一层：**McpToolProvider + McpClient + AiServices**。
+
+完整链路：
+
+```mermaid
+flowchart LR
+    L["DeepSeek 大模型"] --> A["AiServices Agent"]
+    A --> P["McpToolProvider"]
+    P --> C["McpClient"]
+    C --> T["MCP 工具 getOrder"]
+```
+
+```java
+// 1) 内存版 McpClient：实现 LangChain4j 的 McpClient 接口，把工具"交出来"
+//    这里省略了真实传输（stdio/http），直接委托给 OrderTools，便于演示
+McpToolProvider toolProvider = McpToolProvider.builder()
+        .mcpClients(new InMemoryMcpClient(new OrderTools(new MockOrderData())))
+        .build();
+
+// 2) 把 MCP 工具接进 Agent（toolProvider 和普通 @Tool 一样用）
+McpOrderAssistant assistant = AiServices.builder(McpOrderAssistant.class)
+        .chatModel(chatModel)
+        .toolProvider(toolProvider)
+        .build();
+
+// 3) 自然语言提问 → 模型自己决定调 getOrder
+String reply = assistant.chat("查询订单 O1001 的信息");
+```
+
+- `InMemoryMcpClient` 是我们的「内存版 MCP 客户端」：它实现了 `McpClient` 接口（`listTools` / `executeTool`），但跳过了 JSON-RPC 传输，直接把调用委托给本地 `OrderTools`。这是为了在学习环境里看清整条链路；真实环境把它换成 `StdioMcpTransport` 或 `HttpMcpTransport` 即可。
+- 关键验证点：模型回复里的 `399` 只可能来自 `getOrder` 的返回值，说明**模型真的通过 MCP 通道调用了工具**，不是凭空编的。
+
+### 验证
+
+- `InMemoryMcpClientTest`（2 个）：能列出 `getOrder`、能执行并返回订单数据。
+- `McpOrderLiveTest`（真实 DeepSeek）：问「查询订单 O1001」→ 回复带出 O1001 和 399，联动链路实测通过。
