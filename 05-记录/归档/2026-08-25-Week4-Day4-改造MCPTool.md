@@ -18,8 +18,10 @@
 - [x] 把一个现有 Tool 改造成 MCP Tool
 
 ## 补充：LLM 联动
-- 新建 InMemoryMcpClient（实现 McpClient 接口）+ McpOrderAssistant，用 McpToolProvider 接进 AiServices。
-- 真实 DeepSeek 联调通过：问「查询订单 O1001」回复带出 399，证明模型真的通过 MCP 调用了工具。
+- 早期先用 `InMemoryMcpClient`（实现 `McpClient` 接口）看清链路形状。
+- 后修正为真实 stdio：`McpOrderLiveTest` 通过 `startOrderMcpServer()` 拉起 `OrderMcpServer` 子进程，再用 `DefaultMcpClient + StdioMcpTransport` 走 JSON-RPC 调用 `getOrder`；`resolveClasspath()` 负责把依赖路径传给子进程。
+- 新增 `OrderMcpServerStdioTest`（无需 DeepSeek Key）验证 listTools / executeTool 的真实 stdio 链路。
+- 真实 DeepSeek 联调通过：问「查询订单 O1001」回复带出 399，证明模型真的通过 MCP 协议调用了工具。
 
 ## 下一步（Day 5）
 

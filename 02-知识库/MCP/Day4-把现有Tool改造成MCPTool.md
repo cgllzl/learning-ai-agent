@@ -134,27 +134,73 @@ flowchart LR
     C --> T["MCP 工具 getOrder"]
 ```
 
+### 真正跑通的写法（`McpOrderLiveTest` 现在用的）
+
 ```java
-// 1) 内存版 McpClient：实现 LangChain4j 的 McpClient 接口，把工具"交出来"
-//    这里省略了真实传输（stdio/http），直接委托给 OrderTools，便于演示
-McpToolProvider toolProvider = McpToolProvider.builder()
-        .mcpClients(new InMemoryMcpClient(new OrderTools(new MockOrderData())))
-        .build();
+McpClient mcpClient = startOrderMcpServer();   // 关键：先拉起一个真实的 Server 子进程
+try {
+    McpToolProvider toolProvider = McpToolProvider.builder()
+            .mcpClients(mcpClient)
+            .build();
 
-// 2) 把 MCP 工具接进 Agent（toolProvider 和普通 @Tool 一样用）
-McpOrderAssistant assistant = AiServices.builder(McpOrderAssistant.class)
-        .chatModel(chatModel)
-        .toolProvider(toolProvider)
-        .build();
+    McpOrderAssistant assistant = AiServices.builder(McpOrderAssistant.class)
+            .chatModel(chatModel)
+            .toolProvider(toolProvider)
+            .build();
 
-// 3) 自然语言提问 → 模型自己决定调 getOrder
-String reply = assistant.chat("查询订单 O1001 的信息");
+    String reply = assistant.chat("查询订单 O1001 的信息");
+} finally {
+    mcpClient.close();
+}
 ```
 
-- 这里其实有两层验证，要分清楚，不然容易产生“这到底有没有真的用上 Server”的疑问：
-  - `InMemoryMcpClient` 是「内存版 MCP 客户端」：它实现了 `McpClient` 接口（`listTools` / `executeTool`），但跳过 JSON-RPC 传输，直接把调用委托给本地 `OrderTools`。它适合先看清「大模型 → AiServices → McpToolProvider → McpClient → 工具」这条链路的形状。
-  - `StdioMcpTransport` 是「真实传输层」：它会真的启动一个 `OrderMcpServer` 子进程，双方通过 stdin/stdout 交换 JSON-RPC 报文。`McpOrderLiveTest` 用的就是这一条，所以模型拿到的 `399` 是真的一路走完协议链路、由 Server 进程返回的。
-- 关键验证点：模型回复里的 `399` 只可能来自 `getOrder` 的返回值，说明**模型真的通过 MCP 协议调用了工具**，不是凭空编的。
+这里的 `startOrderMcpServer()` 是测试类里自己写的一个小助手方法，不是框架自带的东西。它做的事一句话就能讲清楚：**拼一条命令，让 `StdioMcpTransport` 启动一个独立的 `OrderMcpServer` 进程**。
+
+```java
+private static McpClient startOrderMcpServer() {
+    String javaBin = Path.of(System.getProperty("java.home"), "bin", "java.exe").toString();
+    List<String> command = List.of(
+            javaBin,                       // 用当前 JDK 里的 java.exe
+            "-cp",                         // classpath 参数
+            resolveClasspath(),            // 告诉新进程去哪里找类
+            OrderMcpServer.class.getName() // 要启动的主类
+    );
+
+    return DefaultMcpClient.builder()
+            .key("order-mcp-stdio")
+            .transport(StdioMcpTransport.builder().command(command).build())
+            .build();
+}
+```
+
+而 `resolveClasspath()` 则回答另一个问题：新开的 JVM 是“另一台空电脑”，它不知道你的代码和依赖在哪，所以要给它一份完整的 classpath。
+
+```java
+private static String resolveClasspath() {
+    // Maven Surefire 会提供完整的测试 classpath；IDEA 直接运行时退回到 java.class.path
+    String classpath = System.getProperty("surefire.test.class.path");
+    if (classpath == null || classpath.isBlank()) {
+        classpath = System.getProperty("java.class.path");
+    }
+    if (classpath == null || classpath.isBlank()) {
+        classpath = "target/classes;target/test-classes";
+    }
+    return classpath;
+}
+```
+
+所以不用自己去数“要启动哪些类”，真正需要记住的只有两类测试命令，子进程是测试自动帮你开、用完自动帮你关的。
+
+### 内存版 Client 还留着干嘛
+
+项目里确实还有一个 `InMemoryMcpClient`，它实现了 `McpClient` 接口（`listTools` / `executeTool`），但跳过 JSON-RPC 传输，直接把调用委托给本地 `OrderTools`。它现在不是主角，只承担两个职责：
+
+- 在 `InMemoryMcpClientTest` 这种底层单测里，快速验证「工具列表、参数解析、结果封装」。
+- 帮初学者先看清「大模型 → AiServices → McpToolProvider → McpClient → 工具」这条链路的形状。
+
+真实端到端验证以 `StdioMcpTransport` 为准，`McpOrderLiveTest` 用的就是它，所以模型拿到的 `399` 是真的一路走完协议链路、由 Server 进程返回的。
+
+关键验证点：模型回复里的 `399` 只可能来自 `getOrder` 的返回值，说明**模型真的通过 MCP 协议调用了工具**，不是凭空编的。
 
 ### 验证
 
@@ -162,26 +208,39 @@ String reply = assistant.chat("查询订单 O1001 的信息");
 - `OrderMcpServerStdioTest`（2 个，无需 DeepSeek Key）：真实启动 `OrderMcpServer` 子进程，用 `DefaultMcpClient + StdioMcpTransport` 列出工具、执行工具，验证 MCP 协议链路通。
 - `McpOrderLiveTest`（真实 DeepSeek）：问「查询订单 O1001」→ 回复带出 O1001 和 399，走真实 stdio 的联动链路实测通过。
 
-## 九、如何本地测试
+## 九、如何本地测试（先分清哪些类要你启动）
 
-1. 接线测试（无需 Key，最快）：
+先说结论：**这几个类都不需要你手动启动**。你只需要在 PowerShell 里跑一条 Maven 命令，测试自己会开 Server 子进程、连上、用完再关掉。
+
+先认识一下这些类各自的角色，就不会觉得“怎么这么多类要启动”：
+
+| 类 | 角色 | 需要你手动启动吗 |
+| --- | --- | --- |
+| `OrderMcpServer` | MCP Server 本体，里面带 `main()` | 不用，测试会把它当成子进程启动 |
+| `McpOrderLiveTest` | 真实联调：开 Server + DeepSeek，让大模型通过 MCP 查订单 | 不用，Maven 跑测试即可 |
+| `OrderMcpServerStdioTest` | 不开大模型，只验证 Server 进程能列工具、能执行工具 | 不用 |
+| `InMemoryMcpClientTest` / `OrderMcpServerTest` / `McpToolProviderTest` | 更底层的单测，验证工具注册、参数解析、结果封装 | 不用 |
+
+按“从快到慢、从不需要 Key 到需要 Key”的顺序测：
+
+1. 真实 stdio 链路（推荐先跑，无需 DeepSeek Key，但会真的启动 Server 子进程）：
 ```powershell
 cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
-mvn test -Dtest=InMemoryMcpClientTest,OrderMcpServerTest,McpToolProviderTest,SimpleMcpServerTest
-```
-
-2. 真实 stdio 链路（无需 DeepSeek Key，但会真的启动 Server 子进程）：
-```powershell
 mvn test -Dtest=OrderMcpServerStdioTest
 ```
 
-3. 真实 LLM 联动（需要 DeepSeek Key，走真实 MCP stdio 通道）：
+2. 真实 LLM 联动（需要 DeepSeek Key，走真实 MCP stdio 通道）：
 ```powershell
 .\scripts\test-live.ps1 -Test McpOrderLiveTest
 ```
 脚本自动读 `.env` 的 Key，输出里看 `[MCP stdio 联动回答]` 是否包含 `O1001` 和 `399`。
 
-4. IDEA 里右键测试类 Run；`McpOrderLiveTest` 需要在 Run Configuration 的 Environment variables 里配 `DEEPSEEK_API_KEY`。
+3. 只想跑底层接线测试（无需 Key，最快）：
+```powershell
+mvn test -Dtest=InMemoryMcpClientTest,OrderMcpServerTest,McpToolProviderTest,SimpleMcpServerTest
+```
+
+4. 在 IDEA 里测试：直接右键测试类 Run；`McpOrderLiveTest` 需要在 Run Configuration 的 Environment variables 里配 `DEEPSEEK_API_KEY`。
 
 ## 十、真实 stdio 的两个坑（Day 4 补记）
 
