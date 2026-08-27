@@ -21,3 +21,4 @@
 - [Day 1：Orchestration 模式 + 编排图（已完成）](Day1-Orchestration模式.md)
 - [Day 5：Supervisor 模式（已完成）](Day5-Supervisor模式.md)
 - [Day 6：多 Agent 状态传递与结果合并（已完成）](Day6-多Agent状态传递与结果合并.md)
+- [Week 4 学习总结：Agent 编排 + MCP（已完成）](Week4-学习总结.md)

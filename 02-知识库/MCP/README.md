@@ -23,4 +23,4 @@
 - [Day 2：MCP 协议与 Server（已完成）](Day2-MCP协议与Server.md)
 - [Day 3：接入 MCP Client（已完成）](Day3-接入MCPClient.md)
 - [Day 4：把现有 Tool 改造成 MCP Tool（已完成）](Day4-把现有Tool改造成MCPTool.md)
-- 
+- [Week 4 学习总结：Agent 编排 + MCP（已完成）](../Agent编排/Week4-学习总结.md)
