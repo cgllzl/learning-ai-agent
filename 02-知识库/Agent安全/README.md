@@ -23,3 +23,4 @@
 - [Day 2：给 Agent 接入 RBAC 与租户隔离（已完成）](Day2-RBAC与租户隔离.md)
 - [Day 3：Tool 权限校验，模型只能调用有权限的工具（已完成）](Day3-Tool权限校验.md)
 - [Day 4：Prompt Injection 案例分析 + 防护实践（已完成）](Day4-PromptInjection案例分析.md)
+- [Day 5：Secret 管理，密钥不落地、不打印日志（已完成）](Day5-Secret管理.md)
