@@ -16,4 +16,4 @@
 - 项目：Sprint 9 Observability
 
 ## 笔记列表
-- 
+- [Day 3：接入 Trace，一次对话全链路可追踪（已完成）](Day3-接入Trace.md)
