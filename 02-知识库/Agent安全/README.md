@@ -25,3 +25,4 @@
 - [Day 4：Prompt Injection 案例分析 + 防护实践（已完成）](Day4-PromptInjection案例分析.md)
 - [Day 5：Secret 管理，密钥不落地、不打印日志（已完成）](Day5-Secret管理.md)
 - [Day 6：审计日志 + 高危操作人工审批流（已完成）](Day6-审计日志与人工审批.md)
+- [Week 5 学习总结：企业级 Agent 安全（已完成）](Week5-学习总结.md)
