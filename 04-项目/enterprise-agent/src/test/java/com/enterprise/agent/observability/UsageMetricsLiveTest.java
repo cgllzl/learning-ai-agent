@@ -1,5 +1,7 @@
 package com.enterprise.agent.observability;
 
+import com.enterprise.agent.agent.MockOrderData;
+import com.enterprise.agent.agent.OrderTools;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -35,11 +37,12 @@ class UsageMetricsLiveTest {
         String learningReply = chatService.chat("你是友好助手", "请用一句话介绍你自己");
         System.out.println("[学习例子回答] " + learningReply);
 
-        // 企业例子：客服批量回复场景
-        String enterpriseReply = chatService.chat(
-                "你是电商客服",
-                "请用一句话向客户确认订单已发货");
+        // 企业例子：客服查询订单（会真实调用 getOrder 工具）
+        UsageAwareOrderAgentService orderAgentService =
+                new UsageAwareOrderAgentService(model, new OrderTools(new MockOrderData()), metricsService);
+        String enterpriseReply = orderAgentService.chat("查询订单 O1001 的信息");
         System.out.println("[企业例子回答] " + enterpriseReply);
+        assertThat(enterpriseReply).contains("O1001").contains("399");
 
         UsageSummary summary = metricsService.summary();
         System.out.println("[用量汇总] " + summary);

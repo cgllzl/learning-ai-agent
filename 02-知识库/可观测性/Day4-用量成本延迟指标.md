@@ -72,22 +72,49 @@ public UsageMetrics record(long durationMillis, TokenUsage tokenUsage) {
 
 `UsageMetricsLiveTest` 先调用一次普通聊天，看看一次简单回复要多少 Token。
 
-### 企业例子：客服批量回复成本核算
+### 企业例子：客服查询订单（会真实调用 getOrder 工具）
 
-再模拟电商客服回复「订单已发货」，然后汇总两次请求：
+简单聊天只能统计「一句话对话」的成本，企业里更典型的是 **Agent 为了回答一个问题，先调用工具查数据，再生成答案**。这个过程中模型会发起多轮请求，Token 用量应该累计计算。
+
+我们用 `UsageAwareOrderAgentService` 来做这件事：
+
+```java
+AiServices.builder(OrderAssistant.class)
+        .chatModel(chatModel)
+        .tools(orderTools)
+        .registerListener(new AiServiceResponseReceivedListener() {
+            @Override
+            public void onEvent(AiServiceResponseReceivedEvent event) {
+                TokenUsage usage = event.response().tokenUsage();
+                if (usage != null) {
+                    accumulatedUsage.updateAndGet(current -> current.add(usage));
+                }
+            }
+        })
+        .build();
+```
+
+解释：
+
+- `registerListener` 让每次模型响应回来时，我们都能拿到这次的 `tokenUsage`。
+- `accumulatedUsage.add(usage)` 把「第一次工具调用」和「最终生成答案」的 Token 加在一起。
+- 整次 `chat()` 结束后，再记录一次总延迟和累计 Token。
+
+这样企业例子就从「一句话聊天」升级成了「客服查询订单 O1001 → 模型调用 getOrder 工具 → 返回订单信息」，真实输出：
 
 ```text
+[企业例子回答] 我已经查询到订单 O1001 的信息：... 金额 399.0 元 ...
 [用量汇总] UsageSummary[
   totalRequests=2,
-  totalInputTokens=28,
-  totalOutputTokens=34,
-  totalTokens=62,
-  totalCostUsd=4.496E-5,
-  averageDurationMillis=1089.0
+  totalInputTokens=1339,
+  totalOutputTokens=160,
+  totalTokens=1499,
+  totalCostUsd=5.3753E-4,
+  averageDurationMillis=2286.0
 ]
 ```
 
-这个企业场景直接回答：**如果每天有 10 万条客服消息，大致要花多少钱、平均延迟多少**。有了这些指标，才能做预算、做容量规划、做异常告警。
+这个场景直接对应企业里最关心的问题：**一个带工具调用的客服 Agent 请求，真实 Token 和成本是多少？** 有了累计用量，才能做预算、做容量规划、做异常告警。
 
 ## 六、如何本地测试
 
