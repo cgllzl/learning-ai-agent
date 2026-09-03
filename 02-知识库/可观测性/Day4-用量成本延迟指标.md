@@ -94,11 +94,57 @@ AiServices.builder(OrderAssistant.class)
         .build();
 ```
 
-解释：
+下面把两段关键代码单独拆开讲清楚。
 
-- `registerListener` 让每次模型响应回来时，我们都能拿到这次的 `tokenUsage`。
-- `accumulatedUsage.add(usage)` 把「第一次工具调用」和「最终生成答案」的 Token 加在一起。
-- 整次 `chat()` 结束后，再记录一次总延迟和累计 Token。
+### 监听器：每次模型响应都“记一笔账”
+
+```java
+@Override
+public void onEvent(AiServiceResponseReceivedEvent event) {
+    TokenUsage usage = event.response().tokenUsage();
+    if (usage != null) {
+        accumulatedUsage.updateAndGet(current -> current.add(usage));
+    }
+}
+```
+
+- `@Override`：表示正在实现监听器接口定义的方法。
+- `AiServiceResponseReceivedEvent`：模型「响应已收到」的事件。Agent 每次调用大模型得到响应，都会触发一次。
+- `event.response()`：取出这次完整响应；`.tokenUsage()`：再取出 Token 用量。
+- `if (usage != null)`：有些响应可能没带用量，先判空避免空指针。
+- `accumulatedUsage` 是 `AtomicReference<TokenUsage>`，专门保存累计用量。
+- `updateAndGet(current -> current.add(usage))`：把本次用量加到已有总量上，再写回去；用 `AtomicReference` 是为了线程安全。
+
+关键点：Agent 调工具时，一次用户问题会触发多次模型响应，比如：
+
+1. 第一次响应：模型决定调用 `getOrder`。
+2. 工具执行并返回结果。
+3. 第二次响应：模型根据工具结果生成最终答案。
+
+所以必须用 `add` 累加，不能用 `set` 覆盖，否则前面那轮的 Token 会丢失，成本会被低估。
+
+### 每次 chat：先清零，最后归档
+
+```java
+public String chat(String message) {
+    long startNanos = System.nanoTime();
+    accumulatedUsage.set(new TokenUsage(0, 0, 0)); // 新开账本，清零旧数据
+    try {
+        return assistant.chat(message);
+    } finally {
+        long durationMillis = (System.nanoTime() - startNanos) / 1_000_000;
+        metricsService.record(durationMillis, accumulatedUsage.get());
+    }
+}
+```
+
+- `set(new TokenUsage(0, 0, 0))`：开始本次请求前，把输入、输出、总 Token 都重置为 0，防止上一次请求的 Token 串到这次。
+- `assistant.chat(message)`：真正执行 Agent；期间监听器会持续累加 Token。
+- `finally`：无论成功还是异常，都会执行。
+- `durationMillis`：用结束时间减开始时间，得到本次总延迟。
+- `metricsService.record(...)`：把「本次总延迟 + 累计 Token」归档成一条指标。
+
+一句话：`set(0,0,0)` 是“开新账本”，`finally` 里的 `record` 是“把这次账本归档”。
 
 这样企业例子就从「一句话聊天」升级成了「客服查询订单 O1001 → 模型调用 getOrder 工具 → 返回订单信息」，真实输出：
 
