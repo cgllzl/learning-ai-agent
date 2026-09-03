@@ -18,3 +18,4 @@
 ## 笔记列表
 - [Day 3：接入 Trace，一次对话全链路可追踪（已完成）](Day3-接入Trace.md)
 - [Day 4：记录 Token 用量、成本、延迟指标（已完成）](Day4-用量成本延迟指标.md)
+- [Week 6 学习总结：Evaluation + Observability（已完成）](../Evaluation/Week6-学习总结.md)

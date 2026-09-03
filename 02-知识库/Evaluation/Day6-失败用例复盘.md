@@ -65,6 +65,44 @@ public EvalRunReport run(List<AgentEvalCase> cases,
 
 解释：`answerProvider` 是一个函数，表示「某个用例的答案从哪里来」。这样既可以先用固定答案模拟失败，也可以换成真实 Agent 再跑一次。
 
+### 为什么要把“答案来源”当成参数传进去
+
+`Function<AgentEvalCase, String>` 是 Java 的函数式接口：
+
+- 输入类型：`AgentEvalCase`（一条评估用例）
+- 输出类型：`String`（这条用例的回答）
+
+`run()` 拿到 `answerProvider` 后，不关心它是固定答案还是真实模型，只调用 `answerProvider.apply(evalCase)` 得到回答。这样以后接别的系统时，`run()` 代码不用改。
+
+### 两种调用写法
+
+1. 固定答案，模拟失败：
+
+```java
+runner.run(
+    List.of(orderCase),
+    ignored -> "订单 O1001 的信息"
+);
+```
+
+- `ignored` 表示“会传入一个 AgentEvalCase，但这次用不到”。
+- `->` 右边是函数返回值。
+
+2. 用真实 Agent 回答：
+
+```java
+runner.run(
+    List.of(orderCase),
+    evalCase -> orderAgent.chat(evalCase.input())
+);
+```
+
+- `evalCase` 是函数入参；
+- `evalCase.input()` 取出用例输入；
+- `orderAgent.chat(...)` 用真实 Agent 生成答案。
+
+记法：`Function<A, B>` 是“把 A 转成 B 的小机器”，`->` 左边是入口，右边是处理逻辑，`apply(...)` 是按下开关。
+
 ## 四、学习例子 + 企业例子
 
 ### 学习例子：弱回答失败，改进后通过
