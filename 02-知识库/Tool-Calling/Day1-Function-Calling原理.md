@@ -48,3 +48,7 @@ flowchart LR
 
 - Tool 描述写得不好会怎样？→ 模型选错工具或不敢选。
 - Agent 陷入循环怎么办？→ 限制最大迭代次数（Day 6 实现）。
+
+## 企业落地案例
+- 场景：企业客服中心同一入口同时承接“查订单 / 查物流 / 改状态”等意图，模型通过 Function Calling 自动判断该调哪个工具，Java 侧只负责真正执行。
+- 真实联调：`.\scripts\test-live.ps1 -Test OrderAgentLiveTest`，验证模型按意图选择工具并回填真实数据。

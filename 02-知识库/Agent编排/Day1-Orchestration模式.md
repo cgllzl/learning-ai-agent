@@ -53,3 +53,7 @@ flowchart TB
 
 - [x] 理解 Supervisor / Handoff / Sequential / Parallel / Conditional / Agent State
 - [x] 画出本项目编排架构图
+
+## 企业落地案例
+- 场景：企业客服中心需要按“订单 / 知识 / 外部工具”分流，Supervisor 负责分诊，各子 Agent 负责专业领域，最终汇总回答。
+- 真实联调：`.\scripts\test-live.ps1 -Test SupervisorLiveTest`，验证订单问题被正确路由到订单 Agent。

@@ -112,3 +112,7 @@ OpenAiChatModel.builder()
 
 - 本日只实现：`MockOrderData`（订单）+ `OrderTools.getOrder` + `AiServices` 注册。
 - 后续：Day 3 加 Agent 对话接口（HTTP）；Day 4 扩展用户/物流/商品工具；Day 5 修改订单状态。
+
+## 企业落地案例
+- 场景：客服系统把“订单查询”封装成 `getOrder` 工具，模型收到客户问题后自动请求调用，Java 侧返回真实订单数据。
+- 真实联调：`.\scripts\test-live.ps1 -Test OrderAgentLiveTest`，回复中出现 399，证明工具被真实调用。

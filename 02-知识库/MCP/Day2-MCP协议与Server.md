@@ -155,3 +155,7 @@ this.server = McpServer.sync(transport)
 - `.serverInfo(name, version)`：握手时告诉客户端"我是谁"。
 - `.toolCall(工具说明书, 处理函数)`：注册工具，说明书是给模型看的，处理函数是真正执行的。
 - `.build()`：把前面配置组装成可用的 `McpSyncServer`。
+
+## 企业落地案例
+- 场景：企业内部不同团队（订单、物流、CRM）各自维护自己的 MCP Server，统一接入后，任何 AI 应用都能发现并调用这些工具。
+- 真实联调：`.\scripts\test-live.ps1 -Test McpOrderLiveTest`，验证跨进程 MCP 工具被真实调用。

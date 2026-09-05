@@ -76,3 +76,7 @@ OrderAssistant assistant = AiServices.builder(OrderAssistant.class)
 ## 七、Day 3 完成标准
 
 - [x] 在 Java 项目里接入 MCP Client（LangChain4j McpClient + McpToolProvider 接线）
+
+## 企业落地案例
+- 场景：企业内部 Agent 通过 `McpToolProvider` 同时接入多个团队的 MCP Server，无需为每个团队单独写 REST 适配器。
+- 真实联调：`.\scripts\test-live.ps1 -Test McpOrderLiveTest`，验证 Agent 通过 MCP Client 调用外部工具。

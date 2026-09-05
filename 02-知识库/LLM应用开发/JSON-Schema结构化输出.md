@@ -95,3 +95,7 @@ flowchart LR
 ## 八、下一步
 
 - Day 5：Retry / Timeout / Fallback + 统一错误处理完善
+
+## 企业落地案例
+- 场景：客服工单系统收到客户留言后，用 `ticket` schema 自动抽出“分类、优先级、是否需要人工”，再由路由系统决定自动回复还是转人工。
+- 真实联调：`.\scripts\test-live.ps1 -Test StructuredChatServiceLiveTest`，验证中文工单能被稳定解析成结构化 JSON。

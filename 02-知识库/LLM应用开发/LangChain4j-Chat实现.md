@@ -38,3 +38,7 @@ POST /chat
 - 知识库：`02-知识库/LLM应用开发/`
 - 项目 Sprint：`04-项目/Sprints/Sprint-01-Chat.md`
 - 下一步：Day 3 SSE 流式输出（/chat/stream）
+
+## 企业落地案例
+- 场景：企业客服中心把 `/chat` 作为统一对话底座，前端把客户消息列表传进来，后端负责 System Prompt、参数校验与统一错误处理。
+- 真实联调：`.\scripts\test-live.ps1 -Test OrderAgentLiveTest` 或 Apifox 调用真实 DeepSeek，验证“客户问题 → 自然语言回复”这条主链路。

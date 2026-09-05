@@ -75,3 +75,7 @@ public <T> T callWithFallback(Function<OpenAiChatModel, T> modelAction) {
 ## 七、下一步
 
 - Week 1 完成，进入周总结；然后 Week 2：Tool Calling（真正的 Agent）。
+
+## 企业落地案例
+- 场景：客服高峰期主模型 5xx 或超时，`ResilientCaller` 先指数退避重试，再切换备用模型，保证客服对话尽量不中断；若双模型都失败，统一返回 503 并触发人工兜底。
+- 真实联调：`StructuredChatServiceLiveTest` 走 `ResilientCaller` 真实调用 DeepSeek，验证容错链路在正常路径下不影响结果。

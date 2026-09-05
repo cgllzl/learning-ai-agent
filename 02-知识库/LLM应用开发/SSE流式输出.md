@@ -149,3 +149,7 @@ Apifox / 浏览器 → 显示 data:Java（逐字出现）
 
 - Day 4：Structured Output（JSON Schema 约束输出）
 - Day 5：Retry / Timeout / Fallback
+
+## 企业落地案例
+- 场景：客服在线聊天窗口需要“打字机”效果，客户看到回复逐字出现，而不是等 5~10 秒一次性返回。
+- 真实联调：`.\scripts\test-live.ps1 -Test StreamingChatServiceLiveTest`，验证真实 DeepSeek 流式多分块并正确结束。
