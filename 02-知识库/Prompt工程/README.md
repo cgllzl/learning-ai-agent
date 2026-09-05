@@ -17,4 +17,4 @@
 - 项目：Sprint 1 Chat
 
 ## 笔记列表
-- 
+- [Day 1：Prompt 工程基础（已补全）](Day1-Prompt工程基础.md)

@@ -18,3 +18,4 @@
 
 ## 笔记列表
 - [本机环境（JDK 21 / Maven / Docker，2026-08-11）](本机环境.md)
+- [Day 1：Docker 化与部署工程（已补全）](Day1-Docker与CI.md)

@@ -1,0 +1,9 @@
+services:
+  enterprise-agent:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}

@@ -24,4 +24,4 @@ LLM API / Prompt / Streaming / JSON Schema / 错误处理
 - [x] 流式可用（真实 DeepSeek 流式联调通过，多分块 + [DONE]）
 - [x] 结构化输出可用（真实 DeepSeek 联调通过）
 - [x] 超时/重试/降级可用（ResilientCaller 单测覆盖，真实链路联调通过）
-- [ ] 模型超时/失败时能重试并降级（Day 5）
+- [x] 模型超时/失败时能重试并降级（Day 5）

@@ -11,7 +11,7 @@
 - [x] 创建 Spring Boot 3.5.16 项目（手写 pom，start.spring.io 已不支持 3.5.x）
 - [x] 加入 LangChain4j 依赖（langchain4j-open-ai 1.18.1）
 - [x] 配置 LLM API Key（DeepSeek，`.env` 存 DEEPSEEK_API_KEY，不入库）
-- [ ] Docker 化（已生成 `scripts/install-docker.ps1`，待管理员执行后继续）
+- [x] Docker 化（已生成 `scripts/install-docker.ps1`，并补齐 Dockerfile 与 docker-compose.yml）
 - [x] `/actuator/health` 可用，项目 README 写明启动方式
 
 ## 技术
@@ -25,4 +25,4 @@ JDK 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1 / Docker（待装）
 ## 完成标准
 - [x] 项目可本地启动（`mvn spring-boot:run`）
 - [x] `/actuator/health` 返回 200 + `{"status":"UP"}`
-- [ ] `docker compose up` 一键启动（待 Docker 安装后验证）
+- [ ] `docker compose up` 一键启动（文件已就绪，待实际启动验证）
