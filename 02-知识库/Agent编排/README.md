@@ -2,9 +2,10 @@
 
 ## 核心概念
 - Single-Agent vs Multi-Agent
+- Agent vs Workflow 的边界与混合架构
 - Supervisor 模式
 - Handoff（交接）
-- Sequential / Parallel / Conditional 流程
+- Sequential / Parallel / Conditional / Limited Loop 流程
 - Agent State（状态传递）
 - 多 Agent 结果合并
 - 何时不该用 Multi-Agent
@@ -14,8 +15,8 @@
 - 论文：The Rise and Potential of Large Language Model Based Agents: A Survey（https://arxiv.org/abs/2309.07864）
 
 ## 本项目实践
-- 学习周：Week 4
-- 项目：Sprint 6 Multi-Agent
+- 学习周：Week 4、Week 6.5 Day 1
+- 项目：Sprint 6 Multi-Agent、企业工单 Workflow
 
 ## 笔记列表
 - [Day 1：Orchestration 模式 + 编排图（已完成）](Day1-Orchestration模式.md)

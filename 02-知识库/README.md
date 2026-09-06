@@ -10,7 +10,7 @@
 | Prompt 工程 | `Prompt工程/` | Week 1 |
 | Tool Calling | `Tool-Calling/` | Week 2 |
 | RAG | `RAG/` | Week 3 |
-| Agent 编排 | `Agent编排/` | Week 4 |
+| Agent 编排 | `Agent编排/` | Week 4、Week 6.5 |
 | MCP | `MCP/` | Week 4 |
 | Memory | `Memory/` | Sprint 4 |
 | Agent 安全 | `Agent安全/` | Week 5 |

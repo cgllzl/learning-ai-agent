@@ -32,7 +32,7 @@
 | Sprint 3 | 企业知识库 | RAG 问答 + 引用 | Embedding / Vector DB / Rerank | `RAG` |
 | Sprint 4 | Memory | 多轮记忆 + 长期记忆 | ChatMemory / Redis | `Memory` |
 | Sprint 5 | MCP | 外部工具标准接入 | MCP Client / JSON-RPC | `MCP` |
-| Sprint 6 | Multi-Agent | Supervisor 分工 | Orchestration / Handoff | `Agent编排` |
+| Sprint 6 | Multi-Agent / Workflow | Supervisor 分工 + 工单条件路由与有限复核循环 | Orchestration / Handoff / Conditional / Limited Loop | `Agent编排` |
 | Sprint 7 | 企业安全 | 权限 / 审批 / 审计 | RBAC / Secret / Audit | `Agent安全` |
 | Sprint 8 | Evaluation | 自动化评估 | 评估用例 / CI | `Evaluation` |
 | Sprint 9 | Observability | 全链路追踪与指标 | Trace / 指标 | `可观测性` |
