@@ -1,6 +1,7 @@
 package com.enterprise.agent.chat;
 
 import com.enterprise.agent.agent.AgentProperties;
+import com.enterprise.agent.workflow.AgentWorkflowProperties;
 
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
@@ -9,7 +10,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties({DeepSeekProperties.class, AgentProperties.class})
+@EnableConfigurationProperties({
+        DeepSeekProperties.class,
+        AgentProperties.class,
+        AgentWorkflowProperties.class
+})
 public class ChatConfig {
 
     @Bean

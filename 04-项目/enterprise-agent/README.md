@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Day 3 —— `/chat` 与 `/chat/stream`（SSE 流式）均可用
+- 当前进度：Week 6.5 Day 1 —— 企业工单 Conditional Workflow + 有限质量复核 Loop 已完成
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
@@ -168,6 +168,7 @@ data:[DONE]
 | `deepseek.timeout` | `application.yml` | 单次请求超时，默认 `30s` |
 | `deepseek.max-retries` | `application.yml` | 失败重试次数，默认 `2`（指数退避） |
 | `deepseek.fallback-model` | `application.yml` | 备用模型（重试仍失败时降级），默认同主模型 |
+| `agent.workflow.max-review-iterations` | `application.yml` | 工单答复最大复核次数，默认 `3`，超限转人工 |
 | 服务端口 | `application.yml` | 默认 `8080` |
 
 ## 目录结构
@@ -175,7 +176,7 @@ data:[DONE]
 ```text
 src/main/java/com/enterprise/agent/
 ├── EnterpriseAgentApplication.java   主程序
-└── chat/                             Chat 模块
+├── chat/                             Chat 模块
     ├── ChatController.java           POST /chat、/chat/stream 入口
     ├── ChatService.java              一次性对话（调用 LLM）
     ├── StreamingChatService.java     SSE 流式对话（LangChain4j 流式 API）
@@ -183,6 +184,10 @@ src/main/java/com/enterprise/agent/
     ├── DeepSeekProperties.java       deepseek 配置项
     ├── ChatRequest.java / ChatResponse.java
     └── ChatExceptionHandler.java     统一错误处理
+└── workflow/                         企业工单 Workflow
+    ├── TicketWorkflowService.java    Conditional 分支 + 有限质量复核 Loop
+    ├── TicketCategory.java           严格路由枚举，异常输出转人工
+    └── TicketWorkflowResult.java     可审计的结构化执行结果
 scripts/run-dev.ps1                   本地启动脚本（读取 .env）
 scripts/install-docker.ps1            一键安装 Docker Desktop（需管理员）
 ```
@@ -209,3 +214,4 @@ mvn test -Dtest=StreamingChatServiceLiveTest   # 真实 DeepSeek 流式联调（
 - Day 2（2026-08-12）：`/chat` 对话接口（LLM API / Prompt / 校验）
 - Day 3（2026-08-13）：`/chat/stream` SSE 流式输出
 - Week 2：Tool Calling 订单 Agent（见 `04-项目/Sprints/Sprint-02-Tool-Calling.md`）
+- Week 6.5 Day 1（2026-09-06）：企业工单 Conditional Workflow + 有限 Loop，离线与真实 DeepSeek 联调通过

@@ -22,3 +22,4 @@
 - [Day 5：Supervisor 模式（已完成）](Day5-Supervisor模式.md)
 - [Day 6：多 Agent 状态传递与结果合并（已完成）](Day6-多Agent状态传递与结果合并.md)
 - [Week 4 学习总结：Agent 编排 + MCP（已完成）](Week4-学习总结.md)
+- [Week 6.5 Day 1：Agent 与 Workflow 的边界及控制流（已完成）](Week6.5-Day1-Agent与Workflow控制流.md)

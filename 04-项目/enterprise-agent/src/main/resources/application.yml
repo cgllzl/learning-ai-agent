@@ -29,3 +29,6 @@ deepseek:
 # Agent 配置（Week 2 Day 6：防死循环）
 agent:
   max-sequential-tools-invocations: 3
+  workflow:
+    # Week 6.5 Day 1：有限质量复核循环，达到上限后必须转人工
+    max-review-iterations: 3

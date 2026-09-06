@@ -9,10 +9,12 @@
 - [ ] Handoff（本周未做代码级落地）
 - [x] Sequential 流程（订单 Agent → 客服回复 Agent）
 - [x] Agent State 传递与结果合并
+- [x] Conditional Workflow（Week 6.5 Day 1：订单 / 知识库 / 人工分支）
+- [x] 有限 Loop（Week 6.5 Day 1：答复复核 / 修改，超限转人工）
 - [ ] 评估：Multi-Agent 是否真的比 Single-Agent 好
 
 ## 技术
-Orchestration / Supervisor / Handoff / State
+Orchestration / Supervisor / Handoff / State / Conditional / Limited Loop
 
 ## 知识库映射
 - `02-知识库/Agent编排/`
