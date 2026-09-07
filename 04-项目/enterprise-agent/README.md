@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Week 6.5 Day 1 —— 企业工单 Conditional Workflow + 有限质量复核 Loop 已完成
+- 当前进度：Week 6.5 Day 2 —— Agent Run、Checkpoint、幂等、人工审批、故障恢复与补偿已完成
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
@@ -187,7 +187,12 @@ src/main/java/com/enterprise/agent/
 └── workflow/                         企业工单 Workflow
     ├── TicketWorkflowService.java    Conditional 分支 + 有限质量复核 Loop
     ├── TicketCategory.java           严格路由枚举，异常输出转人工
-    └── TicketWorkflowResult.java     可审计的结构化执行结果
+    ├── TicketWorkflowResult.java     可审计的结构化执行结果
+    └── durable/                      可恢复订单 Workflow
+        ├── AgentRun.java             结构化执行存档
+        ├── AgentCheckpointStore.java Checkpoint 持久化边界
+        ├── IdempotentToolExecutor.java 幂等执行和结果重放
+        └── DurableOrderWorkflowService.java 审批、恢复与补偿编排
 scripts/run-dev.ps1                   本地启动脚本（读取 .env）
 scripts/install-docker.ps1            一键安装 Docker Desktop（需管理员）
 ```
@@ -215,3 +220,4 @@ mvn test -Dtest=StreamingChatServiceLiveTest   # 真实 DeepSeek 流式联调（
 - Day 3（2026-08-13）：`/chat/stream` SSE 流式输出
 - Week 2：Tool Calling 订单 Agent（见 `04-项目/Sprints/Sprint-02-Tool-Calling.md`）
 - Week 6.5 Day 1（2026-09-06）：企业工单 Conditional Workflow + 有限 Loop，离线与真实 DeepSeek 联调通过
+- Week 6.5 Day 2（2026-09-08）：可恢复订单 Workflow，覆盖 Checkpoint、幂等、审批、租户隔离和补偿

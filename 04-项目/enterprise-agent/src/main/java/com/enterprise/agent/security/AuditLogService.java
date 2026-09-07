@@ -4,10 +4,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.stereotype.Service;
+
 /**
  * 内存版审计日志：把每次关键动作记下来。
  * 生产环境通常写数据库或日志系统，这里用内存列表便于学习和测试。
  */
+@Service
 public class AuditLogService {
 
     private final List<AuditLogEntry> entries = new CopyOnWriteArrayList<>();

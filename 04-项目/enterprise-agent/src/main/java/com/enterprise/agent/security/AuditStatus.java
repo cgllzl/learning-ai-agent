@@ -6,5 +6,7 @@ package com.enterprise.agent.security;
 public enum AuditStatus {
     SUCCESS,
     PENDING_APPROVAL,
-    DENIED
+    DENIED,
+    FAILED,
+    COMPENSATED
 }
