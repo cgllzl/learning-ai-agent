@@ -4,6 +4,7 @@
 - 官方资料：
   - LangChain4j Agents and Agentic AI：https://docs.langchain4j.dev/tutorials/agents/
   - Spring AI Building Effective Agents：https://docs.spring.io/spring-ai/reference/api/effective-agents.html
+  - Mockito 官方网站：https://site.mockito.org/
 - 本日结论：企业系统通常不应在 Agent 和 Workflow 之间二选一，而应使用“代码控制边界、模型处理模糊判断”的混合架构。
 
 ## 一、先讲人话：Agent 和 Workflow 有什么区别
@@ -187,7 +188,87 @@ return humanRequiredResult;
 
 ## 七、测试方式
 
-### 1. 离线自动化测试
+### 1. Mockito 的 `mock()` 是什么
+
+本日的离线测试中有以下代码：
+
+```java
+TicketReplyReviewerAssistant reviewer = mock(TicketReplyReviewerAssistant.class);
+TicketReplyReviserAssistant reviser = mock(TicketReplyReviserAssistant.class);
+OrderAgentService orderAgent = mock(OrderAgentService.class);
+RagQaService ragQa = mock(RagQaService.class);
+```
+
+这里的 `mock()` 来自 Mockito：
+
+```java
+import static org.mockito.Mockito.mock;
+```
+
+它会创建一个受测试控制的“假对象”。调用这个对象时，默认不会执行真正的业务方法，因此不会真的请求 DeepSeek、查询订单、生成 Embedding 或执行 RAG。单元测试可以只关注 `TicketWorkflowService` 的条件分支和循环控制。
+
+#### 给 mock 规定返回值
+
+刚创建的 mock 不知道应该返回什么。没有配置的方法通常返回 `null`、`0`、`false` 等默认值。因此测试要用 `when(...).thenReturn(...)` 编写一段可重复的行为：
+
+```java
+when(orderAgent.chat("查询订单 O1001"))
+        .thenReturn("订单 O1001 金额 399 元");
+```
+
+含义是：测试期间只要以这个参数调用假的 `orderAgent.chat()`，就直接返回指定结果，不进入真实订单 Agent。
+
+还可以模拟多轮状态。例如第一次质检不通过，修改后第二次通过：
+
+```java
+when(reviewer.review("ORDER", question, firstDraft))
+        .thenReturn("REVISE:表达不完整");
+when(reviewer.review("ORDER", question, revisedDraft))
+        .thenReturn("PASS");
+```
+
+这种失败场景如果依赖真实模型，不仅慢、花费 API 额度，而且难以保证每次都以相同方式失败。mock 可以让测试稳定复现指定路径。
+
+#### 验证执行路径
+
+mock 也会记录方法调用，因此可以验证 Workflow 是否进入了正确分支：
+
+```java
+verify(orderAgent).chat("查询订单 O1001");
+verify(ragQa, never()).ask(anyString(), any(), anyInt());
+```
+
+- 第一行验证订单分支确实执行了一次；
+- 第二行验证订单问题没有错误进入 RAG 分支；
+- `never()` 表示匹配的方法一次都不能调用。
+
+这比只检查最终字符串更可靠：即使模型碰巧给出了正确答案，只要中间调用了错误或危险的服务，轨迹验证仍应失败。
+
+#### 四个 mock 的职责
+
+| mock 对象 | 在测试中代替什么 | 避免的真实行为 |
+| --- | --- | --- |
+| `reviewer` | 答复质量复核模型 | 请求 DeepSeek 进行质检 |
+| `reviser` | 答复修改模型 | 请求 DeepSeek 重写答复 |
+| `orderAgent` | 订单 Agent | 请求模型并调用订单 Tool |
+| `ragQa` | 企业知识问答服务 | 检索、Embedding 和模型生成 |
+
+`TicketClassifierAssistant` 只有一个方法，所以简单用例也可以直接使用 Lambda：
+
+```java
+TicketClassifierAssistant classifier = message -> "ORDER";
+```
+
+Lambda 和 mock 都是测试替身。需要验证调用次数、检查参数或连续返回不同结果时，Mockito mock 更方便；只需要固定返回一个值时，Lambda 更直接。
+
+#### mock 测试与 LiveTest 的分工
+
+- `ConditionalWorkflowTest`、`LoopWorkflowTest` 使用 mock，稳定验证 Java 分支、循环上限和转人工规则。
+- `AgentWorkflowLiveTest` 使用真实 DeepSeek 和真实订单 Tool，验证模型分类、工具调用及质量复核能够端到端协作。
+
+mock 测试通过只能说明代码控制流正确，不能证明真实模型一定会正确选择。因此企业 Agent 需要同时保留离线单元测试和真实模型联调。
+
+### 2. 离线自动化测试
 
 ```powershell
 cd 04-项目\enterprise-agent
@@ -213,7 +294,7 @@ mvn test
 
 全量结果：163 个测试执行，0 失败、0 错误；其中 31 个需要外部条件的 LiveTest 在普通测试中按设计跳过。
 
-### 2. 真实 DeepSeek 联调
+### 3. 真实 DeepSeek 联调
 
 ```powershell
 cd 04-项目\enterprise-agent
@@ -229,7 +310,7 @@ cd 04-项目\enterprise-agent
 
 本次结果：2 个 LiveTest 全部通过。
 
-### 3. 本日踩坑
+### 4. 本日踩坑
 
 `TicketWorkflowService` 同时保留了生产构造方法和便于离线测试的注入构造方法。Spring 无法自动选择时，应用上下文会启动失败；在生产构造方法上显式标注 `@Autowired` 后，全量回归通过。
 
@@ -261,3 +342,4 @@ Prompt 是软约束，模型可能误解或不遵守。循环上限、超时和�
 - [x] 使用结构化结果记录分支、状态、次数和结束原因。
 - [x] 11 个离线测试通过。
 - [x] 2 个真实 DeepSeek LiveTest 通过。
+- [x] 理解 Mockito `mock`、行为设定和调用轨迹验证在 Agent 单元测试中的作用。
