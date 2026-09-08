@@ -123,6 +123,75 @@ toolExecutor.execute(
 
 第一次执行成功后保存结果；相同键再次执行时直接重放旧结果，不重新进入 Tool。失败结果不缓存，允许后续重试。
 
+### 为什么失败重试测试中的 `attempts` 最后是 2
+
+`failedExecutionIsNotCachedAndCanBeRetried()` 使用 `AtomicInteger attempts` 统计“尝试了几次”，不是“成功了几次”。
+
+第一次调用：
+
+```java
+executor.execute("tenant-a", "notify", () -> {
+    attempts.incrementAndGet();
+    throw new IllegalStateException("通知系统暂时不可用");
+});
+```
+
+执行顺序是：
+
+```text
+attempts：0 → 1
+        ↓
+抛出异常
+        ↓
+没有保存成功结果
+```
+
+所以第一次失败刚结束时，`attempts` 的确等于 1。
+
+测试随后使用同一个幂等键重试：
+
+```java
+ToolExecutionResult retried = executor.execute(
+        "tenant-a",
+        "notify",
+        () -> "sent-" + attempts.incrementAndGet()
+);
+```
+
+由于第一次失败没有写入缓存，执行器会再次调用 `action.get()`：
+
+```text
+attempts：1 → 2
+        ↓
+返回 sent-2
+        ↓
+保存成功结果
+```
+
+因此最终结果是：
+
+| 指标 | 数量 |
+| --- | ---: |
+| 总尝试次数 | 2 |
+| 失败次数 | 1 |
+| 成功次数 | 1 |
+
+如果要同时观察成功次数，可以使用两个计数器：
+
+```java
+AtomicInteger attempts = new AtomicInteger();
+AtomicInteger successes = new AtomicInteger();
+```
+
+最终应满足：
+
+```java
+assertThat(attempts).hasValue(2);
+assertThat(successes).hasValue(1);
+```
+
+这里还有一个生产陷阱：如果第一次通知实际上已经被下游接收，只是在返回响应前网络断开，本地看到的是异常，因此不会缓存结果；再次调用可能重复发送通知。生产环境必须把同一个幂等键传递给下游服务，并让下游用唯一索引、去重表或原生 idempotency key 保证重复请求不会再次产生副作用。
+
 ### 幂等键不能乱复用
 
 同一个业务幂等键只能绑定同一组用户、订单和目标状态。下面这种情况必须拒绝：
