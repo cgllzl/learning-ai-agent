@@ -5,6 +5,12 @@
 - Tenant Isolation（租户隔离）
 - Tool Permission（最小权限）
 - Prompt Injection 与防护
+- Agent Goal Hijack / 间接 Prompt Injection
+- Tool Misuse / Tool Poisoning / 危险工具链
+- Memory & Context Poisoning
+- Agent 间身份、Scope、签名与防重放
+- Agentic Supply Chain / MCP Tool 信任清单
+- 最小自主权与执行前 Intent Gate
 - Sensitive Data 保护
 - Secret Management（密钥管理）
 - Audit Log（审计日志）
@@ -12,10 +18,12 @@
 
 ## 常用官方资料
 - OWASP Top 10 for LLM Applications：https://owasp.org/www-project-top-10-for-large-language-model-applications/
+- OWASP Top 10 for Agentic Applications 2026：https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+- OWASP Secure MCP Server Development：https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/
 - MCP 安全相关规范：https://modelcontextprotocol.io
 
 ## 本项目实践
-- 学习周：Week 5
+- 学习周：Week 5、Week 6.5 Day 3
 - 项目：Sprint 7 企业安全
 
 ## 笔记列表
@@ -26,3 +34,4 @@
 - [Day 5：Secret 管理，密钥不落地、不打印日志（已完成）](Day5-Secret管理.md)
 - [Day 6：审计日志 + 高危操作人工审批流（已完成）](Day6-审计日志与人工审批.md)
 - [Week 5 学习总结：企业级 Agent 安全（已完成）](Week5-学习总结.md)
+- [Week 6.5 Day 3：OWASP Agentic Top 10 与项目威胁模型（已完成）](Week6.5-Day3-OWASP-Agentic-Top10与项目威胁模型.md)

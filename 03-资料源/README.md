@@ -38,6 +38,8 @@
 
 ### 安全
 - OWASP Top 10 for LLM Applications：https://owasp.org/www-project-top-10-for-large-language-model-applications/
+- OWASP Top 10 for Agentic Applications 2026：https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+- OWASP Secure MCP Server Development：https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/
 
 ### 可观测性
 - OpenTelemetry：https://opentelemetry.io/docs

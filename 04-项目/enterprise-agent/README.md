@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Week 6.5 Day 2 —— Agent Run、Checkpoint、幂等、人工审批、故障恢复与补偿已完成
+- 当前进度：Week 6.5 Day 3 —— 间接注入、Intent Gate、Memory 隔离、MCP Tool 信任和 Agent 消息认证已完成
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
@@ -184,6 +184,13 @@ src/main/java/com/enterprise/agent/
     ├── DeepSeekProperties.java       deepseek 配置项
     ├── ChatRequest.java / ChatResponse.java
     └── ChatExceptionHandler.java     统一错误处理
+├── security/agentic/                 Agentic AI 运行时安全
+    ├── AgenticContentGuard.java      所有不可信来源的内容安检
+    ├── AgentIntentGate.java          Tool 执行前实时重验
+    ├── GuardedToolExecutor.java      Tool 调用前后双重检查
+    ├── SecureAgentMemoryStore.java   Memory 隔离、TTL 与租户/用户/会话隔离
+    ├── McpToolTrustVerifier.java     MCP 来源、版本、描述指纹和出站校验
+    └── AgentMessageAuthenticator.java Agent 消息签名、受众、Scope 与防重放
 └── workflow/                         企业工单 Workflow
     ├── TicketWorkflowService.java    Conditional 分支 + 有限质量复核 Loop
     ├── TicketCategory.java           严格路由枚举，异常输出转人工
@@ -211,6 +218,8 @@ scripts/install-docker.ps1            一键安装 Docker Desktop（需管理员
 ```powershell
 mvn test                        # 单元/接口测试（无需 Key）
 mvn test -Dtest=StreamingChatServiceLiveTest   # 真实 DeepSeek 流式联调（需设置 DEEPSEEK_API_KEY）
+mvn test "-Dtest=AgenticSecurityGuardTest,AgentIntentGateTest,GuardedToolExecutorTest,SecureAgentMemoryStoreTest,SecureSupplierKnowledgeServiceTest"
+.\scripts\test-live.ps1 -Test IndirectPromptInjectionLiveTest
 ```
 
 ## 里程碑
@@ -221,3 +230,4 @@ mvn test -Dtest=StreamingChatServiceLiveTest   # 真实 DeepSeek 流式联调（
 - Week 2：Tool Calling 订单 Agent（见 `04-项目/Sprints/Sprint-02-Tool-Calling.md`）
 - Week 6.5 Day 1（2026-09-06）：企业工单 Conditional Workflow + 有限 Loop，离线与真实 DeepSeek 联调通过
 - Week 6.5 Day 2（2026-09-08）：可恢复订单 Workflow，覆盖 Checkpoint、幂等、审批、租户隔离和补偿
+- Week 6.5 Day 3（2026-09-10）：OWASP Agentic AI 安全，恶意供应商文档被阻断且外传动作调用次数为 0

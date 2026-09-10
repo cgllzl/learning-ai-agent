@@ -2,6 +2,8 @@ package com.enterprise.agent.workflow.durable;
 
 import com.enterprise.agent.security.AuditLogService;
 import com.enterprise.agent.security.AuditStatus;
+import com.enterprise.agent.security.SecuritySubject;
+import com.enterprise.agent.security.agentic.AgentIntentGate;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +14,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Set;
 
 class DurableAgentWorkflowTest {
 
@@ -24,8 +28,8 @@ class DurableAgentWorkflowTest {
     void pausesBeforeEverySideEffectUntilHumanApproves() {
         Fixture fixture = fixture();
 
-        AgentRun waiting = fixture.workflow.start(USER, TENANT, "idem-1", ORDER, NEW_STATUS);
-        AgentRun stillWaiting = fixture.workflow.resume(TENANT, waiting.runId());
+        AgentRun waiting = fixture.workflow.start(subject(TENANT), "idem-1", ORDER, NEW_STATUS);
+        AgentRun stillWaiting = fixture.workflow.resume(subject(TENANT), waiting.runId());
 
         assertThat(waiting.status()).isEqualTo(AgentRunStatus.WAITING_APPROVAL);
         assertThat(waiting.approvalId()).isNotBlank();
@@ -43,16 +47,16 @@ class DurableAgentWorkflowTest {
                 .thenThrow(new IllegalStateException("通知系统暂时不可用"))
                 .thenReturn("通知成功");
 
-        AgentRun waiting = fixture.workflow.start(USER, TENANT, "idem-2", ORDER, NEW_STATUS);
-        fixture.approvals.approve(TENANT, waiting.runId());
+        AgentRun waiting = fixture.workflow.start(subject(TENANT), "idem-2", ORDER, NEW_STATUS);
+        fixture.approvals.approve(subject(TENANT), waiting.runId());
 
-        AgentRun failed = fixture.workflow.resume(TENANT, waiting.runId());
+        AgentRun failed = fixture.workflow.resume(subject(TENANT), waiting.runId());
         assertThat(failed.status()).isEqualTo(AgentRunStatus.FAILED);
         assertThat(failed.completedSteps()).containsExactly(AgentStep.UPDATE_ORDER);
         assertThat(failed.nextStep()).isEqualTo(AgentStep.SEND_NOTIFICATION);
 
         DurableOrderWorkflowService restartedService = fixture.newServiceInstance();
-        AgentRun completed = restartedService.resume(TENANT, waiting.runId());
+        AgentRun completed = restartedService.resume(subject(TENANT), waiting.runId());
 
         assertThat(completed.status()).isEqualTo(AgentRunStatus.COMPLETED);
         assertThat(completed.completedSteps()).containsExactly(
@@ -67,14 +71,14 @@ class DurableAgentWorkflowTest {
     void duplicateIdempotencyKeyReturnsOriginalRunButRejectsDifferentPayload() {
         Fixture fixture = fixture();
 
-        AgentRun first = fixture.workflow.start(USER, TENANT, "idem-3", ORDER, NEW_STATUS);
-        AgentRun duplicate = fixture.workflow.start(USER, TENANT, "idem-3", ORDER, NEW_STATUS);
+        AgentRun first = fixture.workflow.start(subject(TENANT), "idem-3", ORDER, NEW_STATUS);
+        AgentRun duplicate = fixture.workflow.start(subject(TENANT), "idem-3", ORDER, NEW_STATUS);
 
         assertThat(duplicate.runId()).isEqualTo(first.runId());
         verify(fixture.planner, times(1)).plan(ORDER, NEW_STATUS);
 
         assertThatThrownBy(() -> fixture.workflow.start(
-                USER, TENANT, "idem-3", ORDER, "CANCELLED"))
+                subject(TENANT), "idem-3", ORDER, "CANCELLED"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("幂等键");
     }
@@ -82,12 +86,29 @@ class DurableAgentWorkflowTest {
     @Test
     void anotherTenantCannotLoadOrResumeRun() {
         Fixture fixture = fixture();
-        AgentRun waiting = fixture.workflow.start(USER, TENANT, "idem-4", ORDER, NEW_STATUS);
+        AgentRun waiting = fixture.workflow.start(subject(TENANT), "idem-4", ORDER, NEW_STATUS);
 
         assertThat(fixture.store.load("tenant-b", waiting.runId())).isEmpty();
-        assertThatThrownBy(() -> fixture.workflow.resume("tenant-b", waiting.runId()))
+        assertThatThrownBy(() -> fixture.workflow.resume(subject("tenant-b"), waiting.runId()))
                 .isInstanceOf(AgentRunNotFoundException.class);
         verify(fixture.orderGateway, never()).updateStatus(anyString(), anyString());
+    }
+
+    @Test
+    void roleRevokedWhileWaitingIsBlockedImmediatelyBeforeToolExecution() {
+        Fixture fixture = fixture();
+        AgentRun waiting = fixture.workflow.start(subject(TENANT), "idem-role-revoked", ORDER, NEW_STATUS);
+        fixture.approvals.approve(subject(TENANT), waiting.runId());
+
+        SecuritySubject revoked = new SecuritySubject(USER, TENANT, Set.of("EMPLOYEE"));
+        AgentRun blocked = fixture.workflow.resume(revoked, waiting.runId());
+
+        assertThat(blocked.status()).isEqualTo(AgentRunStatus.FAILED);
+        assertThat(blocked.lastError()).contains("当前角色已无权");
+        assertThat(blocked.completedSteps()).isEmpty();
+        verify(fixture.orderGateway, never()).updateStatus(anyString(), anyString());
+        assertThat(fixture.audit.entries())
+                .anyMatch(entry -> entry.status() == AuditStatus.BLOCKED);
     }
 
     @Test
@@ -96,10 +117,10 @@ class DurableAgentWorkflowTest {
         when(fixture.notificationGateway.sendStatusChanged(USER, ORDER, NEW_STATUS))
                 .thenThrow(new IllegalStateException("通知永久失败"));
 
-        AgentRun waiting = fixture.workflow.start(USER, TENANT, "idem-5", ORDER, NEW_STATUS);
-        fixture.approvals.approve(TENANT, waiting.runId());
-        AgentRun failed = fixture.workflow.resume(TENANT, waiting.runId());
-        AgentRun compensated = fixture.workflow.compensate(TENANT, failed.runId());
+        AgentRun waiting = fixture.workflow.start(subject(TENANT), "idem-5", ORDER, NEW_STATUS);
+        fixture.approvals.approve(subject(TENANT), waiting.runId());
+        AgentRun failed = fixture.workflow.resume(subject(TENANT), waiting.runId());
+        AgentRun compensated = fixture.workflow.compensate(subject(TENANT), failed.runId());
 
         assertThat(compensated.status()).isEqualTo(AgentRunStatus.COMPENSATED);
         verify(fixture.orderGateway).updateStatus(ORDER, NEW_STATUS);
@@ -116,10 +137,10 @@ class DurableAgentWorkflowTest {
         when(fixture.orderGateway.updateStatus(ORDER, "PENDING"))
                 .thenThrow(new IllegalStateException("订单系统拒绝回滚"));
 
-        AgentRun waiting = fixture.workflow.start(USER, TENANT, "idem-6", ORDER, NEW_STATUS);
-        fixture.approvals.approve(TENANT, waiting.runId());
-        AgentRun failed = fixture.workflow.resume(TENANT, waiting.runId());
-        AgentRun compensationFailed = fixture.workflow.compensate(TENANT, failed.runId());
+        AgentRun waiting = fixture.workflow.start(subject(TENANT), "idem-6", ORDER, NEW_STATUS);
+        fixture.approvals.approve(subject(TENANT), waiting.runId());
+        AgentRun failed = fixture.workflow.resume(subject(TENANT), waiting.runId());
+        AgentRun compensationFailed = fixture.workflow.compensate(subject(TENANT), failed.runId());
 
         assertThat(compensationFailed.status()).isEqualTo(AgentRunStatus.COMPENSATION_FAILED);
         assertThat(compensationFailed.lastError()).contains("拒绝回滚");
@@ -134,14 +155,13 @@ class DurableAgentWorkflowTest {
 
         InMemoryAgentCheckpointStore store = new InMemoryAgentCheckpointStore();
         IdempotentToolExecutor toolExecutor = new IdempotentToolExecutor();
-        WorkflowApprovalService approvals = new WorkflowApprovalService();
+        AuditLogService audit = new AuditLogService();
+        WorkflowApprovalService approvals = new WorkflowApprovalService(audit);
         OrderWorkflowGateway orderGateway = mock(OrderWorkflowGateway.class);
         when(orderGateway.currentStatus(ORDER)).thenReturn("PENDING");
         when(orderGateway.updateStatus(ORDER, NEW_STATUS)).thenReturn("订单更新成功");
         NotificationGateway notificationGateway = mock(NotificationGateway.class);
         when(notificationGateway.sendStatusChanged(USER, ORDER, NEW_STATUS)).thenReturn("通知成功");
-        AuditLogService audit = new AuditLogService();
-
         return new Fixture(
                 planner,
                 store,
@@ -151,6 +171,10 @@ class DurableAgentWorkflowTest {
                 notificationGateway,
                 audit
         );
+    }
+
+    private SecuritySubject subject(String tenantId) {
+        return new SecuritySubject(USER, tenantId, Set.of("ORDER_ADMIN"));
     }
 
     private static final class Fixture {
@@ -188,7 +212,8 @@ class DurableAgentWorkflowTest {
                     approvals,
                     orderGateway,
                     notificationGateway,
-                    audit
+                    audit,
+                    new AgentIntentGate(audit)
             );
         }
     }

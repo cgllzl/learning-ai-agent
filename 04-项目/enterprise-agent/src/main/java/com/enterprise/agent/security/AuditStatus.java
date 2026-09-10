@@ -7,6 +7,7 @@ public enum AuditStatus {
     SUCCESS,
     PENDING_APPROVAL,
     DENIED,
+    BLOCKED,
     FAILED,
     COMPENSATED
 }

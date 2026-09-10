@@ -3,6 +3,9 @@ package com.enterprise.agent.workflow.durable;
 import com.enterprise.agent.security.AuditLogService;
 import com.enterprise.agent.security.AuditStatus;
 import com.enterprise.agent.security.SecuritySubject;
+import com.enterprise.agent.security.agentic.AgentIntent;
+import com.enterprise.agent.security.agentic.AgentIntentGate;
+import com.enterprise.agent.security.agentic.ToolInvocationRequest;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,7 @@ public class DurableOrderWorkflowService {
     private final OrderWorkflowGateway orderGateway;
     private final NotificationGateway notificationGateway;
     private final AuditLogService auditLog;
+    private final AgentIntentGate intentGate;
 
     @Autowired
     public DurableOrderWorkflowService(@Qualifier("openAiChatModel") OpenAiChatModel chatModel,
@@ -37,7 +41,8 @@ public class DurableOrderWorkflowService {
                                        WorkflowApprovalService approvalService,
                                        OrderWorkflowGateway orderGateway,
                                        NotificationGateway notificationGateway,
-                                       AuditLogService auditLog) {
+                                       AuditLogService auditLog,
+                                       AgentIntentGate intentGate) {
         this(
                 AiServices.builder(DurableWorkflowPlannerAssistant.class)
                         .chatModel(chatModel)
@@ -47,7 +52,8 @@ public class DurableOrderWorkflowService {
                 approvalService,
                 orderGateway,
                 notificationGateway,
-                auditLog
+                auditLog,
+                intentGate
         );
     }
 
@@ -57,7 +63,8 @@ public class DurableOrderWorkflowService {
                                 WorkflowApprovalService approvalService,
                                 OrderWorkflowGateway orderGateway,
                                 NotificationGateway notificationGateway,
-                                AuditLogService auditLog) {
+                                AuditLogService auditLog,
+                                AgentIntentGate intentGate) {
         this.planner = planner;
         this.checkpointStore = checkpointStore;
         this.toolExecutor = toolExecutor;
@@ -65,27 +72,27 @@ public class DurableOrderWorkflowService {
         this.orderGateway = orderGateway;
         this.notificationGateway = notificationGateway;
         this.auditLog = auditLog;
+        this.intentGate = intentGate;
     }
 
     /**
      * 创建任务后只生成计划和审批单，不执行任何业务副作用。
      */
-    public AgentRun start(String userId,
-                          String tenantId,
+    public AgentRun start(SecuritySubject subject,
                           String idempotencyKey,
                           String orderId,
                           String newStatus) {
-        requireText(userId, "userId");
-        requireText(tenantId, "tenantId");
+        requireText(subject.userId(), "userId");
+        requireText(subject.tenantId(), "tenantId");
         requireText(idempotencyKey, "idempotencyKey");
         requireText(orderId, "orderId");
         requireText(newStatus, "newStatus");
 
         AgentRun existing = checkpointStore
-                .findByIdempotencyKey(tenantId, idempotencyKey)
+                .findByIdempotencyKey(subject.tenantId(), idempotencyKey)
                 .orElse(null);
         if (existing != null) {
-            ensureSameRequest(existing, userId, orderId, newStatus);
+            ensureSameRequest(existing, subject.userId(), orderId, newStatus);
             return existing;
         }
 
@@ -96,7 +103,7 @@ public class DurableOrderWorkflowService {
 
         if (plan.requiresHuman()) {
             AgentRun rejected = new AgentRun(
-                    runId, userId, tenantId, idempotencyKey, orderId, newStatus, originalStatus,
+                    runId, subject.userId(), subject.tenantId(), idempotencyKey, orderId, newStatus, originalStatus,
                     List.of(), List.of(), null, AgentRunStatus.FAILED,
                     null, plan.reason(), Instant.now());
             checkpointStore.save(rejected);
@@ -106,7 +113,7 @@ public class DurableOrderWorkflowService {
 
         if (!"PENDING".equals(originalStatus)) {
             AgentRun rejected = new AgentRun(
-                    runId, userId, tenantId, idempotencyKey, orderId, newStatus, originalStatus,
+                    runId, subject.userId(), subject.tenantId(), idempotencyKey, orderId, newStatus, originalStatus,
                     plan.steps(), List.of(), null, AgentRunStatus.FAILED,
                     null, "只有 PENDING 订单可以进入修改流程", Instant.now());
             checkpointStore.save(rejected);
@@ -115,12 +122,12 @@ public class DurableOrderWorkflowService {
         }
 
         WorkflowApprovalService.WorkflowApproval approval = approvalService.request(
-                tenantId,
+                subject.tenantId(),
                 runId,
                 "订单 " + orderId + "：" + originalStatus + " -> " + newStatus + "，随后通知用户"
         );
         AgentRun waiting = new AgentRun(
-                runId, userId, tenantId, idempotencyKey, orderId, newStatus, originalStatus,
+                runId, subject.userId(), subject.tenantId(), idempotencyKey, orderId, newStatus, originalStatus,
                 plan.steps(), List.of(), plan.steps().getFirst(), AgentRunStatus.WAITING_APPROVAL,
                 approval.approvalId(), null, Instant.now());
         checkpointStore.save(waiting);
@@ -131,15 +138,15 @@ public class DurableOrderWorkflowService {
     /**
      * 从 Checkpoint 指向的下一步继续；已完成的步骤不会重新进入业务动作。
      */
-    public AgentRun resume(String tenantId, String runId) {
-        AgentRun run = requireRun(tenantId, runId);
+    public AgentRun resume(SecuritySubject currentSubject, String runId) {
+        AgentRun run = requireRun(currentSubject.tenantId(), runId);
         if (isTerminal(run.status())) {
             return run;
         }
         if (run.status() == AgentRunStatus.COMPENSATION_FAILED || run.nextStep() == null) {
             return run;
         }
-        if (!approvalService.isApproved(tenantId, runId)) {
+        if (!approvalService.isApproved(currentSubject.tenantId(), runId)) {
             AgentRun waiting = run.transition(
                     AgentRunStatus.WAITING_APPROVAL,
                     run.nextStep(),
@@ -156,7 +163,7 @@ public class DurableOrderWorkflowService {
         while (run.nextStep() != null) {
             AgentStep currentStep = run.nextStep();
             try {
-                ToolExecutionResult execution = executeStep(run, currentStep);
+                ToolExecutionResult execution = executeStep(currentSubject, run, currentStep);
                 List<AgentStep> completed = new ArrayList<>(run.completedSteps());
                 if (!completed.contains(currentStep)) {
                     completed.add(currentStep);
@@ -188,8 +195,8 @@ public class DurableOrderWorkflowService {
     /**
      * 通知失败后，可把已经修改的订单恢复到原状态。补偿失败会被保存，方便人工继续处理。
      */
-    public AgentRun compensate(String tenantId, String runId) {
-        AgentRun run = requireRun(tenantId, runId);
+    public AgentRun compensate(SecuritySubject currentSubject, String runId) {
+        AgentRun run = requireRun(currentSubject.tenantId(), runId);
         if (run.status() != AgentRunStatus.FAILED
                 && run.status() != AgentRunStatus.COMPENSATION_FAILED) {
             throw new IllegalStateException("只有失败的 Agent Run 可以补偿");
@@ -199,8 +206,9 @@ public class DurableOrderWorkflowService {
         }
 
         try {
+            authorizeStep(currentSubject, run, AgentStep.UPDATE_ORDER, true);
             ToolExecutionResult result = toolExecutor.execute(
-                    tenantId,
+                    currentSubject.tenantId(),
                     runId + ":COMPENSATE_UPDATE_ORDER",
                     () -> orderGateway.updateStatus(run.orderId(), run.originalStatus())
             );
@@ -226,7 +234,11 @@ public class DurableOrderWorkflowService {
         }
     }
 
-    private ToolExecutionResult executeStep(AgentRun run, AgentStep step) {
+    private ToolExecutionResult executeStep(SecuritySubject currentSubject,
+                                            AgentRun run,
+                                            AgentStep step) {
+        authorizeStep(currentSubject, run, step,
+                approvalService.isApproved(currentSubject.tenantId(), run.runId()));
         return switch (step) {
             case UPDATE_ORDER -> toolExecutor.execute(
                     run.tenantId(),
@@ -240,6 +252,40 @@ public class DurableOrderWorkflowService {
                             run.userId(), run.orderId(), run.newStatus())
             );
         };
+    }
+
+    private void authorizeStep(SecuritySubject currentSubject,
+                               AgentRun run,
+                               AgentStep step,
+                               boolean approved) {
+        String toolName = step == AgentStep.UPDATE_ORDER
+                ? "updateOrderStatus"
+                : "sendStatusNotification";
+        String scope = step == AgentStep.UPDATE_ORDER ? "order:write" : "customer:notify";
+        AgentIntent intent = new AgentIntent(
+                "order-workflow:" + run.runId(),
+                run.userId(),
+                run.tenantId(),
+                Set.of("updateOrderStatus", "sendStatusNotification"),
+                Set.of("order:write", "customer:notify"),
+                Set.of(),
+                3,
+                Instant.MAX
+        );
+        List<String> previousTools = run.completedSteps().stream()
+                .map(completed -> completed == AgentStep.UPDATE_ORDER
+                        ? "updateOrderStatus"
+                        : "sendStatusNotification")
+                .toList();
+        intentGate.authorize(currentSubject, intent, new ToolInvocationRequest(
+                toolName,
+                scope,
+                "",
+                java.util.Map.of("tenantId", run.tenantId(), "orderId", run.orderId()),
+                previousTools,
+                run.completedSteps().size(),
+                approved
+        ));
     }
 
     private AgentStep nextStep(List<AgentStep> steps, AgentStep currentStep) {

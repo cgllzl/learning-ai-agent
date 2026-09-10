@@ -329,6 +329,10 @@ ChatMemory 面向语言上下文，可能被截断、摘要或清理；它不适
 
 本日测试重新创建了 `DurableOrderWorkflowService`，但复用了内存 Store，用来验证恢复协议。真正的进程重启会清空内存，因此生产化还必须把 Checkpoint、审批和幂等结果保存到外部持久化系统。
 
+### Day 3 安全加固补记
+
+Day 3 发现原来的 `resume(tenantId, runId)` 只验证租户和审批，没有取得执行瞬间的当前角色。现已把 `start/resume/compensate` 改为接收 `SecuritySubject`，并在每个 Tool 前经过 `AgentIntentGate`。如果用户在等待审批期间被撤销 `ORDER_ADMIN`，恢复时会保存为失败状态，订单 Tool 调用次数保持为 0。审批入口也改为接收当前审批人，只允许同租户的 `ORDER_ADMIN` 或 `SUPERVISOR`，批准成功和拒绝都会写审计。
+
 ## 十三、Day 2 完成标准
 
 - [x] 区分对话记忆、业务数据和 Agent 执行状态。

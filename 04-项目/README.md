@@ -33,7 +33,7 @@
 | Sprint 4 | Memory | 多轮记忆 + 长期记忆 | ChatMemory / Redis | `Memory` |
 | Sprint 5 | MCP | 外部工具标准接入 | MCP Client / JSON-RPC | `MCP` |
 | Sprint 6 | Multi-Agent / Workflow | Supervisor 分工 + 条件路由 + 有限循环 + 可恢复执行 | Orchestration / Conditional / Checkpoint / Idempotency / Compensation | `Agent编排` |
-| Sprint 7 | 企业安全 | 权限 / 审批 / 审计 | RBAC / Secret / Audit | `Agent安全` |
+| Sprint 7 | 企业安全 | 权限 / 审批 / Agentic 安全运行时控制 | RBAC / Intent Gate / Indirect Injection / Tool Trust / Structured Delegation / Audit | `Agent安全` |
 | Sprint 8 | Evaluation | 自动化评估 | 评估用例 / CI | `Evaluation` |
 | Sprint 9 | Observability | 全链路追踪与指标 | Trace / 指标 | `可观测性` |
 | Sprint 10 | Production | 部署上线 | Docker / CI/CD | `部署与工程化` |
