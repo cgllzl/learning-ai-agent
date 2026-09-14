@@ -29,8 +29,8 @@
 ## 当前进度
 
 - Week 1～6 已完成：LLM 应用、Tool Calling、RAG、Agent 编排、MCP、安全、Evaluation 与可观测性。
-- Week 6.5 Day 1～3 已完成：Workflow 控制、可恢复执行，以及 OWASP Agentic AI 运行时安全防线。
-- 当前下一步：Week 6.5 Day 4——Agent 轨迹评估与稳定性评估。
+- Week 6.5 Day 1～4 已完成：Workflow 控制、可恢复执行、Agentic 安全，以及轨迹与稳定性评估。
+- 当前下一步：Week 6.5 Day 5——MCP 新规范与第三方 MCP 安全接入。
 - 详细进度见 `01-每周学习/Week-06.5-Agent企业实战前补缺/学习清单.md`。
 
 ## 第一步

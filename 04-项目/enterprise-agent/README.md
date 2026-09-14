@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Week 6.5 Day 3 —— 间接注入、Intent Gate、Memory 隔离、MCP Tool 信任和 Agent 消息认证已完成
+- 当前进度：Week 6.5 Day 4 —— Agent 轨迹、三层硬门禁、重复运行统计和 Single/Multi Pareto 比较已完成
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
@@ -184,6 +184,12 @@ src/main/java/com/enterprise/agent/
     ├── DeepSeekProperties.java       deepseek 配置项
     ├── ChatRequest.java / ChatResponse.java
     └── ChatExceptionHandler.java     统一错误处理
+├── evaluation/trajectory/            Agent 轨迹与稳定性评估
+    ├── AgentTrajectory.java          一次运行的结构化轨迹
+    ├── TrajectoryEvaluator.java      答案、结果、轨迹三层硬门禁
+    ├── StabilityAnalyzer.java        成功率、方差、P95、成本和步骤统计
+    ├── AgentComparisonService.java   Single/Multi Pareto 比较
+    └── TrajectoryRecording*.java     真实模型、Tool 与 Handoff 采集
 ├── security/agentic/                 Agentic AI 运行时安全
     ├── AgenticContentGuard.java      所有不可信来源的内容安检
     ├── AgentIntentGate.java          Tool 执行前实时重验
@@ -220,6 +226,9 @@ mvn test                        # 单元/接口测试（无需 Key）
 mvn test -Dtest=StreamingChatServiceLiveTest   # 真实 DeepSeek 流式联调（需设置 DEEPSEEK_API_KEY）
 mvn test "-Dtest=AgenticSecurityGuardTest,AgentIntentGateTest,GuardedToolExecutorTest,SecureAgentMemoryStoreTest,SecureSupplierKnowledgeServiceTest"
 .\scripts\test-live.ps1 -Test IndirectPromptInjectionLiveTest
+mvn test "-Dtest=TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest"
+.\scripts\eval-ci.ps1
+.\scripts\test-live.ps1 -Test AgentTrajectoryEvaluationLiveTest
 ```
 
 ## 里程碑
@@ -231,3 +240,4 @@ mvn test "-Dtest=AgenticSecurityGuardTest,AgentIntentGateTest,GuardedToolExecuto
 - Week 6.5 Day 1（2026-09-06）：企业工单 Conditional Workflow + 有限 Loop，离线与真实 DeepSeek 联调通过
 - Week 6.5 Day 2（2026-09-08）：可恢复订单 Workflow，覆盖 Checkpoint、幂等、审批、租户隔离和补偿
 - Week 6.5 Day 3（2026-09-10）：OWASP Agentic AI 安全，恶意供应商文档被阻断且外传动作调用次数为 0
+- Week 6.5 Day 4（2026-09-14）：O1002 留出题各运行 5 次，简单查询场景 Single-Agent Pareto 胜出

@@ -50,8 +50,8 @@
 | --- | --- | --- |
 | Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks | https://arxiv.org/abs/2005.11401 | 未读 |
 | The Rise and Potential of LLM Based Agents: A Survey | https://arxiv.org/abs/2309.07864 | 未读 |
-| AI Agents That Matter | https://arxiv.org/abs/2407.01502 | 未读 |
-| AgentBench | https://arxiv.org/abs/2308.03688 | 未读 |
+| AI Agents That Matter | https://arxiv.org/abs/2407.01502 | 已选读（Week 6.5 Day 4：成本、Pareto、留出集、可复现性） |
+| AgentBench | https://arxiv.org/abs/2308.03688 | 已选读（Week 6.5 Day 4：交互任务、动作指标、循环与任务上限失败） |
 
 ## 本机镜像/加速备忘（2026-08-11）
 - Adoptium JDK 清华镜像：https://mirrors.tuna.tsinghua.edu.cn/Adoptium/

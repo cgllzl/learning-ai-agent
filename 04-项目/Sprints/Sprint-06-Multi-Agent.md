@@ -13,7 +13,7 @@
 - [x] 有限 Loop（Week 6.5 Day 1：答复复核 / 修改，超限转人工）
 - [x] Agent Run + Checkpoint（Week 6.5 Day 2：按步骤保存并从失败点恢复）
 - [x] 幂等与补偿（Week 6.5 Day 2：避免重复副作用，失败后可恢复原订单状态）
-- [ ] 评估：Multi-Agent 是否真的比 Single-Agent 好
+- [x] 评估：Multi-Agent 是否真的比 Single-Agent 好（Week 6.5 Day 4：相同 O1002 留出题各运行 5 次）
 
 ## 技术
 Orchestration / Supervisor / Handoff / State / Conditional / Limited Loop / Checkpoint / Idempotency / Compensation
@@ -27,3 +27,4 @@ Orchestration / Supervisor / Handoff / State / Conditional / Limited Loop / Chec
 - [x] 质量复核循环达到硬上限后自动停止并转人工
 - [x] 订单更新后通知失败，可从通知步骤恢复且不重复修改订单
 - [x] 审批等待和 Agent Run 按租户隔离
+- [x] 同输入、同模型、同数据和同完成标准下形成 Single/Multi 数据化结论

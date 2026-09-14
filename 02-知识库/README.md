@@ -14,7 +14,7 @@
 | MCP | `MCP/` | Week 4 |
 | Memory | `Memory/` | Sprint 4 |
 | Agent 安全 | `Agent安全/` | Week 5、Week 6.5 |
-| Evaluation | `Evaluation/` | Week 6 |
+| Evaluation | `Evaluation/` | Week 6、Week 6.5 |
 | 可观测性 | `可观测性/` | Week 6 |
 | 部署与工程化 | `部署与工程化/` | 贯穿全程 |
 

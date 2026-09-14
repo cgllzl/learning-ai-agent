@@ -5,6 +5,6 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$tests = "AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest"
+$tests = "AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest"
 Write-Host "Running offline evaluation tests: $tests"
 mvn test "-Dtest=$tests" "-Dsurefire.useFile=false"

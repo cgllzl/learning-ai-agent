@@ -20,4 +20,4 @@ jobs:
           cache: maven
 
       - name: Run offline evaluation gate
-        run: mvn -B test -Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest
+        run: mvn -B test -Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest

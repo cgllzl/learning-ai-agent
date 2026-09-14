@@ -102,3 +102,19 @@ cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
 - [x] 评估结果接入 CI
 - [x] 有离线门禁脚本与 GitHub Actions 工作流
 - [x] 有学习例子和企业例子，并真实调用大模型
+
+## 八、Week 6.5 Day 4 扩展：把轨迹评估也放进门禁
+
+原门禁只检查答案用例。Day 4 新增轨迹和架构比较后，本地脚本与 GitHub Actions 同步增加：
+
+- `TrajectoryEvaluatorTest`：答案正确但调用危险 Tool、参数错误或审批顺序错误时必须失败；
+- `AgentComparisonReportTest`：检查五次运行的成功率、方差、成本、P95 延迟和 Pareto 结论；
+- `TrajectoryRecorderTest`：检查轨迹顺序、Token、成本和步骤汇总。
+
+当前离线门禁命令为：
+
+```powershell
+mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest"
+```
+
+这些测试不需要 DeepSeek Key，适合每次 push 和 PR 自动运行。真实模型的五次重复实验仍使用独立 `LiveTest`，避免普通 CI 每次提交都产生模型费用和随机波动。
