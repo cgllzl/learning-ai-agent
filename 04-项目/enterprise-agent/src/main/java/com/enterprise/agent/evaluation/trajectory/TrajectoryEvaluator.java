@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 同时检查最终答案、任务结果和中间执行路线。
+ * 同时检查最终答案、调用方提供的业务完成标记和中间执行路线。
+ * 三层分别记分，便于定位到底是“说错了”“没做成”还是“走错了流程”。
  */
 public class TrajectoryEvaluator {
 
     public TrajectoryEvaluationResult evaluate(AgentTrajectory trajectory,
                                                TrajectoryExpectation expectation) {
+        // 三类问题分开收集：例如答案正确但误调用写 Tool，仍能明确看到是轨迹层失败。
         List<String> answerViolations = new ArrayList<>();
         List<String> outcomeViolations = new ArrayList<>();
         List<String> trajectoryViolations = new ArrayList<>();
@@ -51,6 +53,7 @@ public class TrajectoryEvaluator {
         boolean answerPassed = answerViolations.isEmpty();
         boolean outcomePassed = outcomeViolations.isEmpty();
         boolean trajectoryPassed = trajectoryViolations.isEmpty();
+        // 总结果是硬门禁（AND），不是可互相抵消的加权总分。
         return new TrajectoryEvaluationResult(
                 answerPassed,
                 outcomePassed,
@@ -62,6 +65,7 @@ public class TrajectoryEvaluator {
     private void checkOrder(List<String> actualActions,
                             List<String> expectedOrder,
                             List<String> violations) {
+        // 检查期望动作是否按顺序成为实际轨迹的一个“子序列”；中间允许夹杂其他合法动作。
         int previousIndex = -1;
         for (String action : expectedOrder) {
             int index = nextIndexOf(actualActions, action, previousIndex + 1);
@@ -85,6 +89,7 @@ public class TrajectoryEvaluator {
     private void checkArguments(List<TrajectoryStep> steps,
                                 Map<String, Set<String>> expectations,
                                 List<String> violations) {
+        // 学习版在参数摘要中做片段匹配；生产环境应解析结构化参数并按字段类型、范围逐项校验。
         expectations.forEach((action, fragments) -> {
             List<TrajectoryStep> matchingSteps = steps.stream()
                     .filter(step -> action.equals(step.action()))

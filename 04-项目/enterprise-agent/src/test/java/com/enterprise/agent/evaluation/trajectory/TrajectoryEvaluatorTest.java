@@ -8,6 +8,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * 用手工构造的轨迹验证三层硬门禁，重点覆盖“答案看似正确，但过程或业务结果不合格”。
+ */
 class TrajectoryEvaluatorTest {
 
     private final TrajectoryEvaluator evaluator = new TrajectoryEvaluator();

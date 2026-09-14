@@ -7,6 +7,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/** 使用固定离线数据验证统计公式和 Pareto 的三个分支，不消耗真实模型额度。 */
 class AgentComparisonReportTest {
 
     @Test
@@ -44,7 +45,7 @@ class AgentComparisonReportTest {
     }
 
     @Test
-    void recommendsMultiAgentOnlyWhenQualityGainFitsCostAndLatencyBudget() {
+    void recommendsMultiAgentWhenItParetoDominatesSingleAgent() {
         List<AgentRunSample> single = List.of(
                 sample("SINGLE", true, 100, 0.001, 2, 100),
                 sample("SINGLE", true, 100, 0.001, 2, 100),
@@ -59,7 +60,7 @@ class AgentComparisonReportTest {
     }
 
     @Test
-    void returnsTradeOffWhenQualityGainRequiresTooMuchCost() {
+    void returnsTradeOffWhenQualityImprovesButEfficiencyWorsens() {
         List<AgentRunSample> single = List.of(
                 sample("SINGLE", true, 100, 0.001, 2, 100),
                 sample("SINGLE", true, 100, 0.001, 2, 100),
@@ -68,6 +69,7 @@ class AgentComparisonReportTest {
                 sample("SINGLE", false, 100, 0.001, 2, 100));
         List<AgentRunSample> multi = repeated("MULTI", true, 400, 0.010, 8, 500);
 
+        // Multi 成功率更高，但成本、延迟和步骤数更差：双方各有优势，不能互相支配。
         AgentComparisonReport report = new AgentComparisonService().compare(single, multi);
 
         assertThat(report.recommendation()).isEqualTo("REVIEW_TRADE_OFF");

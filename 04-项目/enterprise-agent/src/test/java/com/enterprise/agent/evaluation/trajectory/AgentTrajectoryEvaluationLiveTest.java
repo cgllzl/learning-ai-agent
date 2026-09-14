@@ -52,6 +52,7 @@ class AgentTrajectoryEvaluationLiveTest {
         List<AgentRunSample> multiSamples = new ArrayList<>();
         for (int run = 1; run <= REPEATED_RUNS; run++) {
             // 交错执行，避免“先跑完 A、网络变慢后再跑 B”造成明显时段偏差。
+            // 每次都走“真实调用 → 三层判定 → 压缩成统计样本”，不会用另一遍调用补采指标。
             AgentTrajectory singleTrajectory = singleAgent.run(holdout.id(), holdout.input());
             TrajectoryEvaluationResult singleResult =
                     evaluator.evaluate(singleTrajectory, holdout.expectation());

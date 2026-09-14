@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/** 验证记录顺序以及从原始步骤汇总操作数、Token 和估算成本的规则。 */
 class TrajectoryRecorderTest {
 
     @Test
@@ -24,8 +25,10 @@ class TrajectoryRecorderTest {
 
         assertThat(trajectory.steps()).extracting(TrajectoryStep::sequence)
                 .containsExactly(1, 2, 3);
+        // AGENT 是生命周期标记，因此实际操作只有 MODEL 和 TOOL 两步。
         assertThat(trajectory.operationalStepCount()).isEqualTo(2);
         assertThat(trajectory.totalTokens()).isEqualTo(150);
+        // (100 输入 × $1 + 50 输出 × $2) / 1,000,000 = $0.0002。
         assertThat(trajectory.totalCostUsd()).isEqualTo(0.0002);
     }
 }
