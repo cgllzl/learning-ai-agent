@@ -31,9 +31,9 @@
 | Sprint 2 | Tool Calling | 业务操作 Agent | Function Calling / @Tool / Agent Loop | `Tool-Calling` |
 | Sprint 3 | 企业知识库 | RAG 问答 + 引用 | Embedding / Vector DB / Rerank | `RAG` |
 | Sprint 4 | Memory | 多轮记忆 + 长期记忆 | ChatMemory / Redis | `Memory` |
-| Sprint 5 | MCP | 外部工具标准接入 | MCP Client / JSON-RPC | `MCP` |
+| Sprint 5 | MCP | 外部工具标准接入 + 版本兼容 + 第三方准入 | MCP Client / JSON-RPC / Catalog Diff / Tool Fingerprint / Output Guard | `MCP` |
 | Sprint 6 | Multi-Agent / Workflow | Supervisor 分工 + 条件路由 + 有限循环 + 可恢复执行 | Orchestration / Conditional / Checkpoint / Idempotency / Compensation | `Agent编排` |
-| Sprint 7 | 企业安全 | 权限 / 审批 / Agentic 安全运行时控制 | RBAC / Intent Gate / Indirect Injection / Tool Trust / Structured Delegation / Audit | `Agent安全` |
+| Sprint 7 | 企业安全 | 权限 / 审批 / Agentic 安全运行时控制 | RBAC / Intent Gate / Indirect Injection / MCP Trust / OAuth Audience / Structured Delegation / Audit | `Agent安全`、`MCP` |
 | Sprint 8 | Evaluation | 结果、轨迹、稳定性与成本联合评估 | Evaluation / Trajectory / Holdout / P95 / Pareto / CI | `Evaluation` |
 | Sprint 9 | Observability | 全链路追踪与指标 | Trace / 指标 | `可观测性` |
 | Sprint 10 | Production | 部署上线 | Docker / CI/CD | `部署与工程化` |

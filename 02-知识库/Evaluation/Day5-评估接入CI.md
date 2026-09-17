@@ -109,12 +109,18 @@ cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
 
 - `TrajectoryEvaluatorTest`：答案正确但调用危险 Tool、参数错误或审批顺序错误时必须失败；
 - `AgentComparisonReportTest`：检查五次运行的成功率、方差、成本、P95 延迟和 Pareto 结论；
-- `TrajectoryRecorderTest`：检查轨迹顺序、Token、成本和步骤汇总。
+- `TrajectoryRecorderTest`：检查轨迹顺序、Token、成本和步骤汇总；
+- `McpCompatibilityTest`：防止把最新 MCP 规范误写成当前 Java 依赖已经支持；
+- `McpToolTrustPolicyTest`：阻断未审核或描述/Schema 变化的第三方 Tool；
+- `McpRemoteCredentialTest`：检查 Token audience、Scope 和安全 Transport 配置；
+- `SecureMcpToolProviderTest`：证明未审核 Tool 及执行器确实从模型工具面消失，并阻断运行时 Tool 输出投毒。
 
 当前离线门禁命令为：
 
 ```powershell
-mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest"
+mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest"
 ```
 
 这些测试不需要 DeepSeek Key，适合每次 push 和 PR 自动运行。真实模型的五次重复实验仍使用独立 `LiveTest`，避免普通 CI 每次提交都产生模型费用和随机波动。
+
+Week 6.5 Day 5 扩展后，当前门禁共 38 个测试：除了答案与轨迹评估，还会检查 MCP 协议版本误判、第三方 Tool 目录变化、真实 Provider 过滤、运行时输出投毒和远程凭证边界。

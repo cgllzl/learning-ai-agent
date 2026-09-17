@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Week 6.5 Day 4 —— Agent 轨迹、三层硬门禁、重复运行统计和 Single/Multi Pareto 比较已完成
+- 当前进度：Week 6.5 Day 5 —— MCP 新规范兼容矩阵、本地等价第三方准入策略、Schema 指纹、输出门禁和远程凭证配置边界已完成
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
@@ -197,6 +197,15 @@ src/main/java/com/enterprise/agent/
     ├── SecureAgentMemoryStore.java   Memory 隔离、TTL 与租户/用户/会话隔离
     ├── McpToolTrustVerifier.java     MCP 来源、版本、描述指纹和出站校验
     └── AgentMessageAuthenticator.java Agent 消息签名、受众、Scope 与防重放
+├── security/mcp/                     第三方 MCP 准入与兼容治理
+    ├── McpCompatibilityMatrix.java   规范、SDK 与项目能力边界
+    ├── McpToolTrustPolicy.java       Tool 清单、完整 Schema、Scope 和可见性门禁
+    ├── ReviewedMcpTool.java          审核后冻结的 Tool Manifest
+    ├── McpToolChangeSet.java         新增、删除和变更目录差异
+    ├── McpToolOutputGuard.java       运行时 Tool 输出不可信内容检查
+    ├── FailClosedMcpToolErrorHandler.java 安全拦截终止模型后续推理
+    ├── McpRemoteCredential.java      本地 audience 配置与最小 Scope
+    └── SecureMcpRemoteTransportFactory.java 关闭内置日志、禁重定向的 HTTP Transport
 └── workflow/                         企业工单 Workflow
     ├── TicketWorkflowService.java    Conditional 分支 + 有限质量复核 Loop
     ├── TicketCategory.java           严格路由枚举，异常输出转人工
@@ -229,6 +238,8 @@ mvn test "-Dtest=AgenticSecurityGuardTest,AgentIntentGateTest,GuardedToolExecuto
 mvn test "-Dtest=TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest"
 .\scripts\eval-ci.ps1
 .\scripts\test-live.ps1 -Test AgentTrajectoryEvaluationLiveTest
+mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,OrderMcpServerStdioTest"
+.\scripts\test-live.ps1 -Test ThirdPartyMcpLiveTest
 ```
 
 ## 里程碑
@@ -241,3 +252,4 @@ mvn test "-Dtest=TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRec
 - Week 6.5 Day 2（2026-09-08）：可恢复订单 Workflow，覆盖 Checkpoint、幂等、审批、租户隔离和补偿
 - Week 6.5 Day 3（2026-09-10）：OWASP Agentic AI 安全，恶意供应商文档被阻断且外传动作调用次数为 0
 - Week 6.5 Day 4（2026-09-14）：O1002 留出题各运行 5 次，简单查询场景 Single-Agent Pareto 胜出
+- Week 6.5 Day 5（2026-09-16）：核对 MCP 2026-07-28 与当前 Java 兼容边界，第三方 Tool 未审核或 Schema 变化时不会对模型可见，真实 DeepSeek + 本地等价 stdio MCP 联调通过

@@ -26,8 +26,15 @@
 
 ### MCP
 - 官方文档：https://modelcontextprotocol.io
-- 官方规范：https://modelcontextprotocol.io/specification/2025-06-18
+- 最新正式规范（2026-07-28）：https://modelcontextprotocol.io/specification/2026-07-28
+- 2026-07-28 GA 说明：https://blog.modelcontextprotocol.io/posts/2026-07-28/
+- Authorization：https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization
+- 安全最佳实践：https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices
+- 2025-06-18 历史规范：https://modelcontextprotocol.io/specification/2025-06-18
 - GitHub 组织：https://github.com/modelcontextprotocol
+- Java SDK Changelog：https://github.com/modelcontextprotocol/java-sdk/blob/main/CHANGELOG.md
+- Registry 信任边界：https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/about.mdx
+- Registry 审核政策：https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/moderation-policy.mdx
 
 ### LLM API
 - DeepSeek 平台（注册/充值/Key）：https://platform.deepseek.com
@@ -40,6 +47,7 @@
 - OWASP Top 10 for LLM Applications：https://owasp.org/www-project-top-10-for-large-language-model-applications/
 - OWASP Top 10 for Agentic Applications 2026：https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
 - OWASP Secure MCP Server Development：https://genai.owasp.org/resource/a-practical-guide-for-secure-mcp-server-development/
+- OWASP 第三方 MCP 安全指南：https://genai.owasp.org/resource/cheatsheet-a-practical-guide-for-securely-using-third-party-mcp-servers-1-0/
 
 ### 可观测性
 - OpenTelemetry：https://opentelemetry.io/docs
