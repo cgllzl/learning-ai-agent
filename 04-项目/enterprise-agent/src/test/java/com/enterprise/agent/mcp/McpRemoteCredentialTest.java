@@ -7,6 +7,7 @@ import com.enterprise.agent.security.mcp.McpServerRegistration;
 import com.enterprise.agent.security.mcp.SecureMcpRemoteTransportFactory;
 import dev.langchain4j.mcp.client.McpHeadersSupplier;
 import dev.langchain4j.mcp.client.transport.http.StreamableHttpMcpTransport;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -19,24 +20,22 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** 验证远程 MCP Token 只能发送给正确 audience，且不会出现在对象日志文本中。 */
+/**
+ * Day 5 远程凭证边界测试。
+ * 这是远程 OAuth 的离线配置验证，不代表已经完成真实授权服务器联调。
+ */
 class McpRemoteCredentialTest {
 
     private static final URI MCP_ENDPOINT = URI.create("https://crm.partner.example/mcp");
 
     @Test
-    void createsAuthorizationHeaderOnlyForExactAudienceAndSufficientScope() {
+    @DisplayName("目的：只有 audience 精确匹配且 Scope 足够时才生成 Authorization Header")
+    void credentialRequiresExactAudienceAndSufficientScope() {
         McpRemoteCredential credential = credential();
 
         assertThat(credential.authorizationHeadersFor(
                 MCP_ENDPOINT, Set.of("crm:read")))
                 .containsEntry("Authorization", "Bearer live-secret-token");
-    }
-
-    @Test
-    void rejectsWrongAudienceOrInsufficientScope() {
-        McpRemoteCredential credential = credential();
-
         assertThatThrownBy(() -> credential.authorizationHeadersFor(
                 URI.create("https://downstream.partner.example/api"), Set.of("crm:read")))
                 .isInstanceOf(AgenticSecurityBlockedException.class)
@@ -48,7 +47,8 @@ class McpRemoteCredentialTest {
     }
 
     @Test
-    void keepsTokenOutOfToStringAndBuildsTransportWithSafeFlags() {
+    @DisplayName("目的：验证 Credential 脱敏，以及 Transport 关闭日志、禁重定向并绑定登记主机")
+    void transportUsesReviewedEndpointAndSafeDefaults() {
         McpRemoteCredential credential = credential();
         StreamableHttpMcpTransport transport = SecureMcpRemoteTransportFactory.create(
                 registration(), credential, Set.of("crm:read"), Duration.ofSeconds(10));
@@ -66,10 +66,7 @@ class McpRemoteCredentialTest {
                 ReflectionTestUtils.getField(transport, "customHeadersSupplier");
         Map<String, String> headers = supplier.apply(null);
         assertThat(headers).containsEntry("Authorization", "Bearer live-secret-token");
-    }
 
-    @Test
-    void rejectsRemoteRegistrationWhoseHostDoesNotMatchItsAudience() {
         McpServerRegistration mismatched = new McpServerRegistration(
                 "crm-remote",
                 "reviewed-crm-server",

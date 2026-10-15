@@ -20,6 +20,7 @@ import dev.langchain4j.mcp.client.transport.stdio.StdioMcpTransport;
 import dev.langchain4j.model.chat.request.json.JsonObjectSchema;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -32,7 +33,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Day 5 真实联调：DeepSeek 只能看到安全策略审核过的只读 MCP Tool。
+ * Day 5 第二个重点测试：真实 DeepSeek 只能看到安全策略审核过的只读 MCP Tool。
  *
  * <p>当前没有配置可信第三方远程 Server 与 OAuth 凭证，而且项目依赖尚未支持 MCP 2026-07-28
  * 端到端能力，所以这里用独立本地 stdio Server 模拟第三方服务。大模型调用与 MCP JSON-RPC 链路都是真实的，
@@ -47,6 +48,7 @@ class ThirdPartyMcpLiveTest {
             "day5-user", "tenant-a", Set.of("CUSTOMER_SERVICE"));
 
     @Test
+    @DisplayName("目的：真实验证 DeepSeek 通过安全 Provider 调用本地等价第三方 MCP 的只读 Tool")
     void deepSeekCanUseOnlyReviewedReadOnlyToolFromLocalEquivalentServer() throws Exception {
         OpenAiChatModel model = OpenAiChatModel.builder()
                 .baseUrl("https://api.deepseek.com")

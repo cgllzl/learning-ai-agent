@@ -9,6 +9,7 @@ import dev.langchain4j.mcp.client.transport.McpTransport;
 import dev.langchain4j.mcp.protocol.McpInitializeParams;
 import dev.langchain4j.mcp.protocol.McpInitializeRequest;
 import io.modelcontextprotocol.spec.ProtocolVersions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -23,11 +24,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/** 把“规范最新版本”和“当前 Java 依赖实际支持版本”分开验证。 */
+/**
+ * Day 5 兼容性测试。
+ * 学习时重点看第二个方法：它真实截获了 LangChain4j 发出的 initialize 请求。
+ */
 class McpCompatibilityTest {
 
     @Test
-    void currentProjectRemainsOnLegacyProtocolUntilBothClientAndServerSupportModernEra() {
+    @DisplayName("目的：核对当前依赖仍处于 2025 旧线，并明确标记暂不支持的 2026 能力")
+    void currentDependenciesStayOn2025AndMark2026FeaturesUnsupported() {
         McpCompatibilityMatrix.ProjectMcpStack stack = McpCompatibilityMatrix.currentProject();
 
         assertThat(stack.langChain4jMcpVersion()).isEqualTo("1.18.1-beta28");
@@ -36,20 +41,14 @@ class McpCompatibilityTest {
         assertThat(stack.officialJavaSdkProtocol()).isEqualTo("2025-11-25");
         assertThat(stack.supportsModernProtocolEndToEnd()).isFalse();
         assertThat(McpCompatibilityMatrix.modernClientApiAvailable()).isFalse();
-    }
 
-    @Test
-    void officialJavaSdkDoesNotYetDeclareThe2026ProtocolConstant() {
         // 反射读取 SDK 实际导出的版本常量，避免看到“SDK 2.0.1”就误认为它支持协议 2026。
         assertThat(Arrays.stream(ProtocolVersions.class.getFields())
                 .filter(field -> field.getType() == String.class)
                 .map(this::readStringConstant))
                 .contains(ProtocolVersions.MCP_2025_11_25)
                 .doesNotContain(McpCompatibilityMatrix.MODERN_PROTOCOL);
-    }
 
-    @Test
-    void modernOnlyFeaturesAreExplicitlyMarkedUnsupported() {
         List<McpCompatibilityMatrix.FeatureSupport> modernOnly =
                 McpCompatibilityMatrix.features().stream()
                 .filter(feature -> feature.feature().contains("server/discover")
@@ -64,6 +63,7 @@ class McpCompatibilityTest {
     }
 
     @Test
+    @DisplayName("目的：截获真实 initialize 请求，证明 LangChain4j Client 实际发送 2025-11-25")
     void langChain4jClientActuallySends2025ProtocolInItsInitializeRequest() throws Exception {
         McpTransport transport = mock(McpTransport.class);
         JsonNode initializeResponse = new ObjectMapper().readTree("""

@@ -123,4 +123,4 @@ mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluatio
 
 这些测试不需要 DeepSeek Key，适合每次 push 和 PR 自动运行。真实模型的五次重复实验仍使用独立 `LiveTest`，避免普通 CI 每次提交都产生模型费用和随机波动。
 
-Week 6.5 Day 5 扩展后，当前门禁共 38 个测试：除了答案与轨迹评估，还会检查 MCP 协议版本误判、第三方 Tool 目录变化、真实 Provider 过滤、运行时输出投毒和远程凭证边界。
+Week 6.5 Day 5 测试归并后，当前门禁共 28 个主题测试：除了答案与轨迹评估，还会检查 MCP 协议版本误判、第三方 Tool 目录变化、真实 Provider 过滤、运行时输出投毒和远程凭证边界。

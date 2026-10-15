@@ -416,6 +416,35 @@ result.protocolVersion
 
 ## 十二、测试方式
 
+### 最快阅读路线：不需要平均阅读所有测试
+
+Day 5 现在只有 **9 个离线主题测试 + 1 个真实联调测试**。如果学习时间有限，按下面顺序：
+
+1. **第一重点：`SecureMcpToolProviderTest`**——看安全策略如何真正接入 LangChain4j，而不是停留在单独的规则函数。
+2. **第二重点：`ThirdPartyMcpLiveTest`**——看 DeepSeek、ToolProvider、MCP Client 和 stdio Server 怎样连成真实链路。
+3. **语法重点：`McpCompatibilityTest.langChain4jClientActuallySends2025ProtocolInItsInitializeRequest()`**——看 `build()`、初始化请求、Mockito、Captor 和异步响应。
+4. `McpToolTrustPolicyTest` 用来查安全规则细节；理解前三项以后再看。
+5. `McpRemoteCredentialTest` 只在学习远程 HTTP/OAuth 时阅读，当前不是主线。
+
+如果只有 30 分钟，精读前三项即可；其余测试先看 `@DisplayName("目的：...")`，遇到对应问题再展开。
+
+### 每个测试方法在验证什么
+
+| 测试类 | 测试方法 | 目的 | 阅读优先级 |
+| --- | --- | --- | --- |
+| `SecureMcpToolProviderTest` | `providerExposesReviewedReadToolButRemovesUnreviewedWriteToolAndItsExecutor` | 证明 Provider 只暴露审核工具，未审核 Tool 连执行器一起消失 | 必读 |
+| `SecureMcpToolProviderTest` | `aiServicesStopsAfterPoisonedMcpOutputInsteadOfSendingItBackToTheModel` | 证明 Tool 输出含隐藏指令时关闭式终止，不产生第二次模型调用 | 必读 |
+| `ThirdPartyMcpLiveTest` | `deepSeekCanUseOnlyReviewedReadOnlyToolFromLocalEquivalentServer` | 真实验证 DeepSeek 通过安全 Provider 调用 stdio MCP | 必读 |
+| `McpCompatibilityTest` | `langChain4jClientActuallySends2025ProtocolInItsInitializeRequest` | 截获 initialize 请求，证明 Client 实际发送的协议版本 | 语法重点 |
+| `McpCompatibilityTest` | `currentDependenciesStayOn2025AndMark2026FeaturesUnsupported` | 核对依赖仍在 2025 旧线，并列明暂不支持的 2026 能力 | 快速浏览 |
+| `McpToolTrustPolicyTest` | `visibilityPolicyAllowsSafeToolAndRejectsAllUntrustedVariants` | 汇总验证受信 Client、Tool 指纹、Schema、Scope 和审计脱敏 | 建议阅读 |
+| `McpToolTrustPolicyTest` | `catalogDiffRequiresReviewForEveryKindOfChange` | 验证 Tool 新增、删除或变化都会要求重审 | 按需查阅 |
+| `McpToolTrustPolicyTest` | `requiresScopeAndRequestExposureApprovalBeforeShowingWriteTool` | 验证写 Tool 需要写 Scope 和本次可见性许可 | 按需查阅 |
+| `McpRemoteCredentialTest` | `credentialRequiresExactAudienceAndSufficientScope` | 验证只有目标 audience 和足够 Scope 才生成认证 Header | 远程接入时看 |
+| `McpRemoteCredentialTest` | `transportUsesReviewedEndpointAndSafeDefaults` | 验证对象脱敏、关闭日志、禁重定向和主机绑定 | 远程接入时看 |
+
+代码中的每个测试方法都使用 `@DisplayName("目的：...")` 标明测试意图，因此在 IDEA 或 Maven 测试报告中也能直接看到中文目的。
+
 ### 1. Day 5 离线测试
 
 ```powershell
@@ -423,7 +452,7 @@ cd 04-项目\enterprise-agent
 mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest"
 ```
 
-结果：19 个测试通过，覆盖真实依赖版本与初始化协议、新增/删除/变更 Tool、Schema 指纹、受信 Client 实例、最小 Scope、写 Tool 可见性许可、Provider 实际过滤、运行时输出投毒、audience 配置、Token 脱敏和安全 HTTP Transport。
+结果：9 个主题测试通过，覆盖真实依赖版本与初始化协议、新增/删除/变更 Tool、Schema 指纹、受信 Client 实例、最小 Scope、写 Tool 可见性许可、Provider 实际过滤、运行时输出投毒、audience 配置、Token 脱敏和安全 HTTP Transport。
 
 ### 2. MCP 与 Agentic 安全回归
 
@@ -431,7 +460,7 @@ mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredential
 mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,OrderMcpServerStdioTest,InMemoryMcpClientTest,AgenticSecurityGuardTest,ThirdPartyMcpLiveTest"
 ```
 
-普通 Maven 环境结果：31 个测试执行，30 个通过；1 个需要 Key 的 LiveTest 按设计跳过，0 失败、0 错误。
+普通 Maven 环境结果：21 个测试执行，20 个通过；1 个需要 Key 的 LiveTest 按设计跳过，0 失败、0 错误。
 
 ### 3. 真实 DeepSeek 联调
 
@@ -447,7 +476,7 @@ mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredential
 .\scripts\eval-ci.ps1
 ```
 
-结果：38 个评估、轨迹与 MCP 治理测试通过，0 失败、0 错误；GitHub Actions 使用同一测试清单。
+结果：28 个评估、轨迹与 MCP 治理测试通过，0 失败、0 错误；GitHub Actions 使用同一测试清单。
 
 ### 5. 全量回归
 
@@ -455,7 +484,7 @@ mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredential
 mvn clean test
 ```
 
-结果：237 个测试执行，0 失败、0 错误；35 个需要外部条件的 LiveTest 在普通测试中按设计跳过。
+结果：227 个测试执行，0 失败、0 错误；35 个需要外部条件的 LiveTest 在普通测试中按设计跳过。本机默认 DJL 临时缓存曾无法加载原生 DLL，改用新的 `java.io.tmpdir` 后回归通过，与本次 MCP 测试归并无关。
 
 ## 十三、当前边界
 
