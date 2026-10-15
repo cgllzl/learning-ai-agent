@@ -315,6 +315,93 @@ McpOrderAssistant assistant = AiServices.builder(McpOrderAssistant.class)
 
 包装器同时实现 `execute(...)` 和 `executeWithContext(...)`，后者原样返回 `ToolExecutionResult`，避免丢失 `isError`、结构化 Content 和 attributes。安全异常再由 `FailClosedMcpToolErrorHandler` 直接抛出，离线测试确认模型只被调用一次，恶意结果没有触发第二轮模型请求。
 
+### 7. 按测试类归纳：`McpCompatibilityTest`
+
+#### `langChain4jClientActuallySends2025ProtocolInItsInitializeRequest()`
+
+这个测试不是检查手写兼容表，而是验证当前 LangChain4j Client 的真实行为：创建 Client 时，实际发出的初始化请求中是否携带 `2025-11-25`。
+
+整体流程：
+
+```text
+DefaultMcpClient.builder()
+        ↓ build()
+new DefaultMcpClient(builder)
+        ↓ 构造方法读取 Builder；未显式设置版本时采用 2025-11-25
+initialize()
+        ↓
+new McpInitializeRequest(operationId)
+        ↓
+createInitializeParams()
+        ↓ 设置 protocolVersion、clientInfo、capabilities
+request.setParams(params)
+        ↓
+transport.initialize(request)
+        ↓
+ArgumentCaptor 捕获 request 并检查 params.protocolVersion
+```
+
+`McpInitializeRequest` 不是通过 Builder 创建的，而是在 `DefaultMcpClient.initialize()` 中直接构造：
+
+```java
+long operationId = idGenerator.getAndIncrement();
+McpInitializeRequest request = new McpInitializeRequest(operationId);
+McpInitializeParams params = createInitializeParams();
+request.setParams(params);
+```
+
+它的构造器调用父类：
+
+```java
+public McpInitializeRequest(Long id) {
+    super(id, McpClientMethod.INITIALIZE);
+}
+```
+
+因此刚 `new` 出来时已有 JSON-RPC 的 `id` 和 `method=initialize`，随后才通过 `setParams` 装入协议版本、Client 信息和能力声明。
+
+测试中必须分清两条数据链：
+
+```text
+请求：DefaultMcpClient → McpInitializeRequest → mock transport
+响应：mock transport → CompletableFuture<JsonNode> → DefaultMcpClient
+```
+
+`ArgumentCaptor<McpInitializeRequest>` 只保存调用 `transport.initialize(request)` 时传入的请求，不保存返回值。因此：
+
+```java
+McpInitializeParams params =
+        (McpInitializeParams) captor.getValue().getParams();
+```
+
+取得的是请求中的：
+
+```text
+params.protocolVersion
+```
+
+不是假响应中的：
+
+```text
+result.protocolVersion
+```
+
+请求和响应恰好都写着 `2025-11-25`，是因为旧线初始化要完成版本协商：Client 在请求中提出版本，Server 在响应中返回最终版本。
+
+关键测试语法：
+
+| 语法 | 作用 |
+| --- | --- |
+| `mock(McpTransport.class)` | 创建不访问网络或子进程的假传输层 |
+| `when(...).thenReturn(...)` | 规定假 Transport 收到初始化请求后的响应 |
+| `CompletableFuture.completedFuture(response)` | 返回一个已经完成、无需等待的异步结果 |
+| `ArgumentCaptor.forClass(...)` | 创建指定参数类型的捕获器 |
+| `verify(transport).initialize(captor.capture())` | 确认方法被调用，并保存当时传入的请求 |
+| `(McpInitializeParams)` | 把父类返回的通用参数转换成初始化参数 |
+| `try/finally` | 无论断言成功或失败都关闭 MCP Client |
+
+假响应的作用只是让 `build()` 内部的同步初始化顺利完成；真正被断言的是 Client 发出的请求。如果以后依赖升级后默认请求改成 `2026-07-28` 或不再发送 `initialize`，这个测试会失败，提醒我们重新检查代码、兼容矩阵和知识库结论。
+
 ## 十一、真实 DeepSeek + MCP 等价联调
 
 `ThirdPartyMcpLiveTest` 使用独立本地 stdio Server 模拟第三方订单 MCP，真实调用 DeepSeek。只审核 `getOrder`，模型最终回答：
