@@ -36,6 +36,11 @@
 - Registry 信任边界：https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/about.mdx
 - Registry 审核政策：https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/moderation-policy.mdx
 
+### Agent Skill
+- OpenAI Build skills：https://developers.openai.com/plugins/build/skills
+- Open Agent Skills specification：https://openagentskills.dev/docs/specification
+- Open Agent Skills GitHub：https://github.com/agentskills/agentskills
+
 ### LLM API
 - DeepSeek 平台（注册/充值/Key）：https://platform.deepseek.com
 - DeepSeek API 文档：https://api-docs.deepseek.com

@@ -35,6 +35,7 @@
 | Sprint 6 | Multi-Agent / Workflow | Supervisor 分工 + 条件路由 + 有限循环 + 可恢复执行 | Orchestration / Conditional / Checkpoint / Idempotency / Compensation | `Agent编排` |
 | Sprint 7 | 企业安全 | 权限 / 审批 / Agentic 安全运行时控制 | RBAC / Intent Gate / Indirect Injection / MCP Trust / OAuth Audience / Structured Delegation / Audit | `Agent安全`、`MCP` |
 | Sprint 8 | Evaluation | 结果、轨迹、稳定性与成本联合评估 | Evaluation / Trajectory / Holdout / P95 / Pareto / CI | `Evaluation` |
+| Week 6.5 补缺 | Agent Skill | 可复用订单售后 SOP、触发评估与版本治理 | SKILL.md / Progressive Disclosure / Trigger Eval | `Agent-Skill` |
 | Sprint 9 | Observability | 全链路追踪与指标 | Trace / 指标 | `可观测性` |
 | Sprint 10 | Production | 部署上线 | Docker / CI/CD | `部署与工程化` |
 

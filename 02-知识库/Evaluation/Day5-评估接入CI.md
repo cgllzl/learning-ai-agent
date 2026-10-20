@@ -114,13 +114,14 @@ cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
 - `McpToolTrustPolicyTest`：阻断未审核或描述/Schema 变化的第三方 Tool；
 - `McpRemoteCredentialTest`：检查 Token audience、Scope 和安全 Transport 配置；
 - `SecureMcpToolProviderTest`：证明未审核 Tool 及执行器确实从模型工具面消失，并阻断运行时 Tool 输出投毒。
+- `EnterpriseOrderAfterSalesSkillTest`：检查 Skill 元数据、渐进式参考资料、权限边界，以及 5 个应触发和 5 个不应触发样例。
 
 当前离线门禁命令为：
 
 ```powershell
-mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest"
+mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest"
 ```
 
 这些测试不需要 DeepSeek Key，适合每次 push 和 PR 自动运行。真实模型的五次重复实验仍使用独立 `LiveTest`，避免普通 CI 每次提交都产生模型费用和随机波动。
 
-Week 6.5 Day 5 测试归并后，当前门禁共 28 个主题测试：除了答案与轨迹评估，还会检查 MCP 协议版本误判、第三方 Tool 目录变化、真实 Provider 过滤、运行时输出投毒和远程凭证边界。
+Week 6.5 Day 6 加入 Skill 治理后，当前门禁共 30 个主题测试：除了答案与轨迹评估，还会检查 MCP 协议版本误判、第三方 Tool 目录变化、真实 Provider 过滤、运行时输出投毒、远程凭证边界，以及 Skill 文件和触发样例是否发生回归。

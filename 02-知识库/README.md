@@ -12,6 +12,7 @@
 | RAG | `RAG/` | Week 3 |
 | Agent 编排 | `Agent编排/` | Week 4、Week 6.5 |
 | MCP | `MCP/` | Week 4、Week 6.5 |
+| Agent Skill | `Agent-Skill/` | Week 6.5 |
 | Memory | `Memory/` | Sprint 4 |
 | Agent 安全 | `Agent安全/` | Week 5、Week 6.5 |
 | Evaluation | `Evaluation/` | Week 6、Week 6.5 |

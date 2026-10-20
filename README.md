@@ -29,8 +29,8 @@
 ## 当前进度
 
 - Week 1～6 已完成：LLM 应用、Tool Calling、RAG、Agent 编排、MCP、安全、Evaluation 与可观测性。
-- Week 6.5 Day 1～5 已完成：Workflow 控制、可恢复执行、Agentic 安全、轨迹评估，以及 MCP 新规范与第三方安全接入策略。
-- 当前下一步：Week 6.5 Day 6——Agent Skill 设计、测试与治理。
+- Week 6.5 Day 1～6 已完成：Workflow 控制、可恢复执行、Agentic 安全、轨迹评估、MCP 新规范与 Agent Skill 治理。
+- 当前下一步：进入 Week 7～8 企业级项目实战，把前置能力组合进真实系统。
 - 详细进度见 `01-每周学习/Week-06.5-Agent企业实战前补缺/学习清单.md`。
 
 ## 第一步
