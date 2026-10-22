@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Week 6.5 Day 6 —— 企业订单售后 Skill、5+5 触发集、离线治理门禁与真实 DeepSeek 对照评估已完成
+- 当前进度：第二阶段 Day 6.1 —— 企业售后 Skill v1.1.0 增加确定性脚本、离线回归和真实 DeepSeek → Script 联调
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
@@ -242,6 +242,7 @@ mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredential
 .\scripts\test-live.ps1 -Test ThirdPartyMcpLiveTest
 mvn test "-Dtest=EnterpriseOrderAfterSalesSkillTest,EnterpriseOrderAfterSalesSkillLiveTest"
 .\scripts\test-live.ps1 -Test EnterpriseOrderAfterSalesSkillLiveTest
+# 上述 eval-ci.ps1 还会运行 5 个 Python Skill Script 行为测试
 ```
 
 ## 里程碑
@@ -256,3 +257,4 @@ mvn test "-Dtest=EnterpriseOrderAfterSalesSkillTest,EnterpriseOrderAfterSalesSki
 - Week 6.5 Day 4（2026-09-14）：O1002 留出题各运行 5 次，简单查询场景 Single-Agent Pareto 胜出
 - Week 6.5 Day 5（2026-09-16）：核对 MCP 2026-07-28 与当前 Java 兼容边界，第三方 Tool 未审核或 Schema 变化时不会对模型可见，真实 DeepSeek + 本地等价 stdio MCP 联调通过
 - Week 6.5 Day 6（2026-10-21）：完成最小 Skill 与企业订单售后 Skill；真实 DeepSeek 触发判断 10/10，流程完整度由 4/7 提升到 7/7
+- 第二阶段 Day 6.1（2026-10-22）：企业售后 Skill 升至 1.1.0；真实 DeepSeek 提取 CANCEL/O1003，脚本预检发现受信身份、审批和幂等键缺失

@@ -284,6 +284,8 @@ mvn test "-Dtest=EnterpriseOrderAfterSalesSkillTest,EnterpriseOrderAfterSalesSki
 
 Week 6.5 至此形成完整链条：**控制流程 → 可恢复执行 → 专项安全 → 轨迹评估 → 标准化能力接入 → 可复用 SOP**。下一步进入 Week 7～8 企业项目时，不再只是拼功能，而是把这些门禁组合到一个真实系统中。
 
+> 2026-10-22 延伸：Day 6 当天为了先验证指令型 Skill，没有放脚本。现在已升到 `1.1.0` 并加入确定性预检；详见 [Day 6.1](Week6.5-Day6.1-Skill-Script确定性预检.md)。下文 `1.0.0` 和“本次不放脚本”均为 Day 6 的历史状态。
+
 ## 资料来源
 
 - Level 1：OpenAI Build skills：https://developers.openai.com/plugins/build/skills

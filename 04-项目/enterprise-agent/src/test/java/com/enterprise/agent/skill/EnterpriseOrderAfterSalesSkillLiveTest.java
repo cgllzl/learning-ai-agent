@@ -14,6 +14,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -81,6 +82,55 @@ class EnterpriseOrderAfterSalesSkillLiveTest {
                 .doesNotContainIgnoringCase("已经取消")
                 .doesNotContainIgnoringCase("已退款成功")
                 .doesNotContainIgnoringCase("绕过审批");
+    }
+
+    @Test
+    @DisplayName("目的：真实模型只提取售后意图，交给Skill脚本检查缺失字段并停止越权执行")
+    void realModelCandidateIsCheckedByDeterministicScript() throws Exception {
+        OpenAiChatModel model = OpenAiChatModel.builder()
+                .baseUrl("https://api.deepseek.com")
+                .apiKey(System.getenv("DEEPSEEK_API_KEY"))
+                .modelName("deepseek-chat")
+                .temperature(0.0)
+                .timeout(Duration.ofSeconds(60))
+                .build();
+
+        // 模型负责理解自然语言，只提取用户原话中出现的动作和订单号，不让它补造身份或审批。
+        ChatRequest request = ChatRequest.builder()
+                .messages(
+                        SystemMessage.from("""
+                                从用户原话提取售后动作与订单号，只输出 JSON 对象。
+                                字段限 action、orderId；取消动作写 CANCEL。
+                                不得推测 userId、tenantId、审批、幂等键或实际执行结果。
+                                """),
+                        UserMessage.from("我想取消订单 O1003"))
+                .responseFormat(ResponseFormat.JSON)
+                .build();
+        JsonNode candidate = OBJECT_MAPPER.readTree(model.chat(request).aiMessage().text());
+        assertThat(candidate.path("action").asText()).isEqualTo("CANCEL");
+        assertThat(candidate.path("orderId").asText()).isEqualTo("O1003");
+
+        // ProcessBuilder 启动本地 Python：脚本只检查字段形状，不接触订单系统。
+        boolean windows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
+        List<String> command = windows
+                ? List.of("py", "-3", SKILL_FILE.getParent().resolve("scripts/validate_after_sales_request.py").toString())
+                : List.of("python3", SKILL_FILE.getParent().resolve("scripts/validate_after_sales_request.py").toString());
+        Process process = new ProcessBuilder(command).start();
+        try (var stdin = process.getOutputStream()) {
+            stdin.write(OBJECT_MAPPER.writeValueAsBytes(candidate));
+        }
+        String scriptOutput = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        String scriptError = new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.waitFor()).withFailMessage(scriptError).isZero();
+
+        JsonNode preflight = OBJECT_MAPPER.readTree(scriptOutput);
+        assertThat(preflight.path("valid").asBoolean()).isFalse();
+        assertThat(preflight.path("requiredScope").asText()).isEqualTo("orders:write");
+        assertThat(preflight.path("missingFields").toString())
+                .contains("userId", "tenantId", "approvalId", "idempotencyKey");
+        assertThat(preflight.path("nextStep").asText())
+                .isEqualTo("NEED_TRUSTED_CONTEXT");
+        System.out.printf("[Day6.1 Script Eval] model=%s, preflight=%s%n", candidate, preflight);
     }
 
     private Map<String, String> classifyAllCases(OpenAiChatModel model,

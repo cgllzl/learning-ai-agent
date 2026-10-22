@@ -57,8 +57,12 @@ class EnterpriseOrderAfterSalesSkillTest {
                 .contains("display_name: \"企业订单售后处理\"")
                 .contains("short_description:");
 
-        // 当前 Skill 不带 scripts/：确定性校验由 Java/CI 做，业务副作用必须继续走受控 Tool。
-        assertThat(SKILL_ROOT.resolve("scripts")).doesNotExist();
+        // Skill v1.1 增加本地预检脚本；它只校验字段形状，业务副作用仍走受控 Tool。
+        assertThat(SKILL_ROOT.resolve("scripts/validate_after_sales_request.py"))
+                .isRegularFile();
+        assertThat(skill).contains("version: \"1.1.0\"")
+                .contains("scripts/validate_after_sales_request.py")
+                .contains("valid: true");
     }
 
     @Test

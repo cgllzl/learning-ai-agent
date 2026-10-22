@@ -5,6 +5,7 @@
 ## 学习笔记
 
 - [Week 6.5 Day 6：Agent Skill 设计、测试与治理（已完成）](Week6.5-Day6-Agent-Skill设计测试与治理.md)
+- [Day 6.1：Skill Script 确定性预检（已完成）](Week6.5-Day6.1-Skill-Script确定性预检.md)
 
 ## 对应项目
 
