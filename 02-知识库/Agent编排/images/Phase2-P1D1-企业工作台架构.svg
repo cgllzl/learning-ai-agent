@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="650" viewBox="0 0 1140 650" role="img" aria-labelledby="title desc">
+  <title id="title">Phase 2 Priority 1 Day 1 企业工作台架构图</title>
+  <desc id="desc">工作台经 Spring Boot 路由接口，由 DeepSeek 分类和 Java 白名单给出页面建议；订单、知识、审批、数据和审计模块将在后续学习日接入。</desc>
+  <defs>
+    <marker id="arrowSolid" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#176b82"/>
+    </marker>
+    <marker id="arrowPlanned" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#81909e"/>
+    </marker>
+    <style>
+      .bg { fill: #f7fafc; }
+      .title { font: 700 28px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #17324d; }
+      .subtitle { font: 16px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #526778; }
+      .label { font: 700 20px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #17324d; text-anchor: middle; }
+      .detail { font: 15px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #526778; text-anchor: middle; }
+      .legend { font: 14px "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #526778; }
+      .current { fill: #e7f6f8; stroke: #176b82; stroke-width: 2.5; }
+      .planned { fill: #fff; stroke: #a5b3bf; stroke-width: 2; stroke-dasharray: 7 5; }
+      .solidLine { fill: none; stroke: #176b82; stroke-width: 3; marker-end: url(#arrowSolid); }
+      .plannedLine { fill: none; stroke: #81909e; stroke-width: 2.5; stroke-dasharray: 8 6; marker-end: url(#arrowPlanned); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1140" height="650"/>
+  <text class="title" x="60" y="48">企业工作台：请求先路由，再进入受控业务链</text>
+  <text class="subtitle" x="60" y="78">实线：Day 1 已实现　　虚线：后续学习日接入</text>
+
+  <rect class="planned" x="420" y="105" width="300" height="62" rx="14"/>
+  <text class="label" x="570" y="133">React 企业工作台</text>
+  <text class="detail" x="570" y="155">Day 2 建立界面与身份</text>
+
+  <rect class="current" x="420" y="210" width="300" height="62" rx="14"/>
+  <text class="label" x="570" y="238">Spring Boot 路由 API</text>
+  <text class="detail" x="570" y="260">POST /api/workbench/route</text>
+
+  <rect class="current" x="420" y="315" width="300" height="72" rx="14"/>
+  <text class="label" x="570" y="345">DeepSeek 分类 → Java 白名单</text>
+  <text class="detail" x="570" y="370">只返回页面建议；NOT_EXECUTED</text>
+
+  <path class="plannedLine" d="M570 167 L570 204"/>
+  <path class="solidLine" d="M570 272 L570 308"/>
+
+  <path class="plannedLine" d="M420 351 L205 351 L205 436"/>
+  <path class="plannedLine" d="M570 387 L570 436"/>
+  <path class="plannedLine" d="M720 351 L935 351 L935 436"/>
+
+  <rect class="planned" x="65" y="442" width="280" height="70" rx="14"/>
+  <text class="label" x="205" y="472">订单与受控 Tool</text>
+  <text class="detail" x="205" y="496">租户、权限、幂等</text>
+
+  <rect class="planned" x="430" y="442" width="280" height="70" rx="14"/>
+  <text class="label" x="570" y="472">知识库与 RAG</text>
+  <text class="detail" x="570" y="496">文档权限、引用</text>
+
+  <rect class="planned" x="795" y="442" width="280" height="70" rx="14"/>
+  <text class="label" x="935" y="472">审批与人工队列</text>
+  <text class="detail" x="935" y="496">参数级审批、转人工</text>
+
+  <path class="plannedLine" d="M205 512 L205 550"/>
+  <path class="plannedLine" d="M570 512 L570 550"/>
+  <path class="plannedLine" d="M935 512 L935 550"/>
+
+  <rect class="planned" x="65" y="558" width="280" height="58" rx="14"/>
+  <text class="label" x="205" y="593">PostgreSQL / Redis</text>
+
+  <rect class="planned" x="430" y="558" width="280" height="58" rx="14"/>
+  <text class="label" x="570" y="593">pgvector / 文档存储</text>
+
+  <rect class="planned" x="795" y="558" width="280" height="58" rx="14"/>
+  <text class="label" x="935" y="593">审计 / Trace / Evaluation</text>
+</svg>

@@ -27,19 +27,9 @@
 
 ## 三、产品架构和页面地图
 
-```mermaid
-flowchart TB
-  UI[React 企业工作台] --> API[Spring Boot API]
-  API --> IAM[身份、租户、RBAC]
-  API --> ROUTE[路由与 Workflow]
-  ROUTE --> ORDER[订单与受控 Tool]
-  ROUTE --> RAG[知识库与 RAG]
-  ROUTE --> HUMAN[审批与人工队列]
-  ORDER --> DATA[PostgreSQL / Redis]
-  RAG --> VECTOR[pgvector / 文档存储]
-  ROUTE --> AUDIT[审计、Trace、Evaluation]
-  ROUTE --> LLM[DeepSeek]
-```
+![企业工作台架构图：实线表示 Day 1 已实现，虚线表示后续接入](images/Phase2-P1D1-企业工作台架构.png)
+
+需要放大时可打开 [SVG 矢量原图](images/Phase2-P1D1-企业工作台架构.svg)。图中的实线是 Day 1 已实现的路由 API 与分类链；虚线是 Day 2～8 将逐步接入的前端、订单、知识库、审批、存储和审计。
 
 页面地图：登录与演示身份 → 运营总览 → AI 工作台；工作台可进入订单中心、知识库中心、审批中心、Trace/审计、Evaluation 与 MCP/Skill 管理。5种角色分别是客服、主管、知识管理员、审计员和系统管理员。每个角色看到的页面只是界面便利，真正的数据权限必须在 Java API 和数据查询处再次验证。
 
