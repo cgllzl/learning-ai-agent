@@ -5,18 +5,21 @@
 
 ## 项目形态
 
-企业知识问答 + 业务操作 Agent：
+企业知识问答 + 业务操作 Agent + 可视化运营工作台：
 - 对话式访问企业内部知识库（RAG）
 - 通过 Tool / MCP 操作业务系统（查订单、查用户、查物流、改状态等）
 - 带权限、审计、人工审批，可观测、可评估
+- React 企业界面覆盖 AI 对话、订单、知识库、审批、Trace、Evaluation 和治理
+- 可生成 smoke/demo/load 三档关联业务数据，用于演示与压测
 
 ## 技术栈（第一阶段固定主栈）
 
 | 层 | 选型 |
 | --- | --- |
-| 语言 / 框架 | Java 17+ / Spring Boot 3 / Maven |
+| 后端 | Java 21 / Spring Boot 3 / Maven |
+| 前端 | React / TypeScript / Vite / 企业后台组件库 |
 | Agent 框架 | LangChain4j（主线） |
-| 向量数据库 | pgvector 或 Qdrant（Week 3 时定） |
+| 数据与检索 | PostgreSQL / pgvector / Redis / 对象存储 |
 | 记忆 | Redis / MySQL |
 | MCP | MCP Client（Java） |
 | 部署 | Docker / Docker Compose |
@@ -38,6 +41,9 @@
 | Week 6.5 补缺 | Agent Skill | 可复用订单售后 SOP、触发评估与版本治理 | SKILL.md / Progressive Disclosure / Trigger Eval | `Agent-Skill` |
 | Sprint 9 | Observability | 全链路追踪与指标 | Trace / 指标 | `可观测性` |
 | Sprint 10 | Production | 部署上线 | Docker / CI/CD | `部署与工程化` |
+| Sprint 11 | 企业界面与演示数据 | Web 工作台 + 规模数据 + 演示/简历材料 | React / TypeScript / Seed Data / E2E / Load Test | 第二阶段产品定义 |
+
+第二阶段的产品范围、页面、数据规模和简历验收标准见 `01-每周学习/第二阶段-Agent企业实战/项目产品定义与简历验收.md`。
 
 ## 使用方式
 

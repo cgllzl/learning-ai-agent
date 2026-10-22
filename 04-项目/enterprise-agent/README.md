@@ -4,6 +4,7 @@
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
 - 当前进度：第二阶段 Day 6.1 —— 企业售后 Skill v1.1.0 增加确定性脚本、离线回归和真实 DeepSeek → Script 联调
+- 第二阶段产品目标：React 企业工作台 + Spring Boot Agent 后端 + PostgreSQL/pgvector/Redis + 三档合成数据 + 可观测/压测/简历级交付材料
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
 ## 环境要求
