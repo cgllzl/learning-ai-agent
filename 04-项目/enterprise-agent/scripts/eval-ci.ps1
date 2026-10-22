@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$tests = "AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest"
+$tests = "AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest,WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest"
 Write-Host "Running offline evaluation and governance tests: $tests"
 mvn test "-Dtest=$tests" "-Dsurefire.useFile=false"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

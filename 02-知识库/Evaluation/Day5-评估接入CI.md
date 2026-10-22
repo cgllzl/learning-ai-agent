@@ -127,3 +127,5 @@ mvn test "-Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluatio
 Week 6.5 Day 6 加入 Skill 治理后，当前门禁共 30 个主题测试：除了答案与轨迹评估，还会检查 MCP 协议版本误判、第三方 Tool 目录变化、真实 Provider 过滤、运行时输出投毒、远程凭证边界，以及 Skill 文件和触发样例是否发生回归。
 
 第二阶段 Day 6.1 在本地脚本与 GitHub Actions 中增加了 Python Skill Script 的 5 个行为测试。门禁现在是 **30 个 Java 主题测试 + 5 个 Python 脚本测试**；真实 DeepSeek 的 2 个 LiveTest 仍单独运行。
+
+Phase 2 Priority 1 Day 1 再加入工作台路由和 HTTP 契约的 3 个 Java 离线测试，当前门禁为 **33 个 Java 主题测试 + 5 个 Python 脚本测试**。真实工作台路由联调仍由 `WorkbenchRoutingLiveTest` 单独运行。

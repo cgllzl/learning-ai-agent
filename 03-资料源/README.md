@@ -16,11 +16,13 @@
 
 ### Java / Spring
 - Spring Boot 官方文档：https://docs.spring.io/spring-boot
+- Spring Boot Validation：https://docs.spring.io/spring-boot/reference/io/validation.html
 - Spring AI 官方文档：https://docs.spring.io/spring-ai/reference/
 
 ### LangChain4j
 - 官方文档：https://docs.langchain4j.dev
 - Getting Started：https://docs.langchain4j.dev/tutorials/getting-started
+- AI Services：https://docs.langchain4j.dev/tutorials/ai-services/
 - GitHub：https://github.com/langchain4j/langchain4j
 - Examples：https://github.com/langchain4j/langchain4j-examples
 

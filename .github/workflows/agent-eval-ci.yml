@@ -20,7 +20,7 @@ jobs:
           cache: maven
 
       - name: Run offline evaluation and governance gate
-        run: mvn -B test -Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest
+        run: mvn -B test -Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest,WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest
 
       - uses: actions/setup-python@v5
         with:

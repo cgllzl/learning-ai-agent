@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：第二阶段 Day 6.1 —— 企业售后 Skill v1.1.0 增加确定性脚本、离线回归和真实 DeepSeek → Script 联调
+- 当前进度：Phase 2 Priority 1 Day 1 —— 企业工作台路由预判 API、角色/页面/模块架构与接口契约已完成；Day 2 前端与受信身份待开始
 - 第二阶段产品目标：React 企业工作台 + Spring Boot Agent 后端 + PostgreSQL/pgvector/Redis + 三档合成数据 + 可观测/压测/简历级交付材料
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
@@ -244,6 +244,8 @@ mvn test "-Dtest=McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredential
 mvn test "-Dtest=EnterpriseOrderAfterSalesSkillTest,EnterpriseOrderAfterSalesSkillLiveTest"
 .\scripts\test-live.ps1 -Test EnterpriseOrderAfterSalesSkillLiveTest
 # 上述 eval-ci.ps1 还会运行 5 个 Python Skill Script 行为测试
+mvn test "-Dtest=WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest,WorkbenchRoutingLiveTest"
+.\scripts\test-live.ps1 -Test WorkbenchRoutingLiveTest
 ```
 
 ## 里程碑
@@ -259,3 +261,4 @@ mvn test "-Dtest=EnterpriseOrderAfterSalesSkillTest,EnterpriseOrderAfterSalesSki
 - Week 6.5 Day 5（2026-09-16）：核对 MCP 2026-07-28 与当前 Java 兼容边界，第三方 Tool 未审核或 Schema 变化时不会对模型可见，真实 DeepSeek + 本地等价 stdio MCP 联调通过
 - Week 6.5 Day 6（2026-10-21）：完成最小 Skill 与企业订单售后 Skill；真实 DeepSeek 触发判断 10/10，流程完整度由 4/7 提升到 7/7
 - 第二阶段 Day 6.1（2026-10-22）：企业售后 Skill 升至 1.1.0；真实 DeepSeek 提取 CANCEL/O1003，脚本预检发现受信身份、审批和幂等键缺失
+- Phase 2 Priority 1 Day 1（2026-10-22）：工作台路由契约 `POST /api/workbench/route` 落地；真实 DeepSeek 将订单、制度和高风险请求分别导向订单、知识和人工页面，均未执行业务

@@ -17,7 +17,7 @@
 - 论文：The Rise and Potential of Large Language Model Based Agents: A Survey（https://arxiv.org/abs/2309.07864）
 
 ## 本项目实践
-- 学习周：Week 4、Week 6.5 Day 1～2
+- 学习周：Week 4、Week 6.5 Day 1～2、Phase 2 Priority 1
 - 项目：Sprint 6 Multi-Agent、企业工单 Workflow、可恢复订单 Workflow
 
 ## 笔记列表
@@ -27,3 +27,4 @@
 - [Week 4 学习总结：Agent 编排 + MCP（已完成）](Week4-学习总结.md)
 - [Week 6.5 Day 1：Agent 与 Workflow 的边界及控制流（已完成）](Week6.5-Day1-Agent与Workflow控制流.md)
 - [Week 6.5 Day 2：Agent 持久化执行、恢复、幂等与补偿（已完成）](Week6.5-Day2-Agent持久化执行与故障恢复.md)
+- [Phase 2 Priority 1 Day 1：企业工作台架构与路由契约（已完成）](Phase2-Priority1-Day1-企业工作台架构与路由契约.md)
