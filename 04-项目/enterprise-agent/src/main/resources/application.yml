@@ -11,6 +11,15 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
+app:
+  # Day 2 本地前端来源；部署环境用逗号分隔的 FRONTEND_ORIGINS 覆盖。
+  frontend-origins: ${FRONTEND_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+
+demo:
+  auth:
+    # 演示会话只存在后端内存中，重启即失效；Priority 2 再持久化正式身份数据。
+    session-ttl: 8h
+
 management:
   endpoints:
     web:

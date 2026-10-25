@@ -7,7 +7,7 @@
 
 - 核对现有 Chat、订单 Agent、RAG 与工单 Workflow 的入口和边界。
 - 确定5种角色、9类页面、模块架构和工作台 API 契约。
-- 实现 `POST /api/workbench/route`；模型仅分类，Java 将输出限制为固定页面建议，含糊或高风险意图转人工。
+- 实现工作台路由契约；Day 2 将路径版本化为 `POST /api/v1/workbench/route` 并加入 Bearer 会话保护。
 - 返回 `NOT_EXECUTED`，避免把路由预判误写成业务已完成。
 
 ## 验证

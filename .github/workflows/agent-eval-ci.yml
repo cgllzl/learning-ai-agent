@@ -20,7 +20,7 @@ jobs:
           cache: maven
 
       - name: Run offline evaluation and governance gate
-        run: mvn -B test -Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest,WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest
+        run: mvn -B test -Dtest=AgentEvalCaseCatalogTest,AgentEvaluationServiceTest,CiEvaluationGateTest,TrajectoryEvaluatorTest,AgentComparisonReportTest,TrajectoryRecorderTest,McpCompatibilityTest,McpToolTrustPolicyTest,McpRemoteCredentialTest,SecureMcpToolProviderTest,EnterpriseOrderAfterSalesSkillTest,WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest,DemoSessionServiceTest,DemoAuthenticationIntegrationTest
 
       - uses: actions/setup-python@v5
         with:
@@ -28,3 +28,17 @@ jobs:
 
       - name: Check deterministic Skill script
         run: python -m unittest discover -v -s ../skills/enterprise-order-after-sales/scripts -p test_validate_after_sales_request.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: 04-项目/enterprise-agent-web/package-lock.json
+
+      - name: Install workbench dependencies
+        working-directory: 04-项目/enterprise-agent-web
+        run: npm ci
+
+      - name: Test and build workbench
+        working-directory: 04-项目/enterprise-agent-web
+        run: npm test && npm run build

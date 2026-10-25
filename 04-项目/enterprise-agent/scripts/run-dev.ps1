@@ -26,4 +26,6 @@ if ($env:JAVA_HOME -and (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
 
 # 3. 启动
 Set-Location $root
-mvn spring-boot:run
+$devTemp = Join-Path $root "target\dev-tmp"
+New-Item -ItemType Directory -Force -Path $devTemp | Out-Null
+mvn spring-boot:run "-Dspring-boot.run.jvmArguments=-Djava.io.tmpdir=$devTemp"

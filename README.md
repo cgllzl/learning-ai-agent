@@ -30,7 +30,7 @@
 
 - Week 1～6 已完成：LLM 应用、Tool Calling、RAG、Agent 编排、MCP、安全、Evaluation 与可观测性。
 - Week 6.5 Day 1～6 已完成：Workflow 控制、可恢复执行、Agentic 安全、轨迹评估、MCP 新规范与 Agent Skill 治理。
-- 第二阶段已于 2026-10-22 启动：目标升级为带 React 企业界面、规模化合成数据、完整业务闭环和简历级交付证据的 Agent 产品；Day 6.1 与 Priority 1 Day 1 已完成。
+- 第二阶段已于 2026-10-22 启动：目标升级为带 React 企业界面、规模化合成数据、完整业务闭环和简历级交付证据的 Agent 产品；Day 6.1 与 Priority 1 Day 1～2 已完成。
 - 第二阶段总计划见 `01-每周学习/第二阶段-Agent企业实战/README.md`。
 - 详细进度见 `01-每周学习/Week-06.5-Agent企业实战前补缺/学习清单.md`。
 

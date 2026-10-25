@@ -17,6 +17,15 @@
 ### Java / Spring
 - Spring Boot 官方文档：https://docs.spring.io/spring-boot
 - Spring Boot Validation：https://docs.spring.io/spring-boot/reference/io/validation.html
+- Spring Security Servlet Architecture：https://docs.spring.io/spring-security/reference/servlet/architecture.html
+- Spring Security Authentication：https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html
+- Spring Security CORS：https://docs.spring.io/spring-security/reference/servlet/integrations/cors.html
+
+### 前端工作台
+- React 从零构建：https://react.dev/learn/build-a-react-app-from-scratch
+- React TypeScript：https://react.dev/learn/typescript
+- Vite Getting Started：https://vite.dev/guide/
+- Vite TypeScript：https://vite.dev/guide/features
 - Spring AI 官方文档：https://docs.spring.io/spring-ai/reference/
 
 ### LangChain4j

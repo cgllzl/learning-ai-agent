@@ -23,7 +23,7 @@
 - MCP 安全相关规范：https://modelcontextprotocol.io
 
 ## 本项目实践
-- 学习周：Week 5、Week 6.5 Day 3
+- 学习周：Week 5、Week 6.5 Day 3、Phase 2 Priority 1
 - 项目：Sprint 7 企业安全
 
 ## 笔记列表
@@ -35,3 +35,4 @@
 - [Day 6：审计日志 + 高危操作人工审批流（已完成）](Day6-审计日志与人工审批.md)
 - [Week 5 学习总结：企业级 Agent 安全（已完成）](Week5-学习总结.md)
 - [Week 6.5 Day 3：OWASP Agentic Top 10 与项目威胁模型（已完成）](Week6.5-Day3-OWASP-Agentic-Top10与项目威胁模型.md)
+- [Phase 2 Priority 1 Day 2：受信身份与企业前端壳（已完成）](Phase2-Priority1-Day2-受信身份与企业前端壳.md)

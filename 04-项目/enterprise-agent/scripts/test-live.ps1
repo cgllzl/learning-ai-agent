@@ -34,6 +34,8 @@ if ($env:JAVA_HOME -and (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
 
 # 3. 运行联调测试（打印测试输出，便于看到 Agent 回复）
 Set-Location $root
+$liveTestTemp = Join-Path $root "target\live-test-tmp"
+New-Item -ItemType Directory -Force -Path $liveTestTemp | Out-Null
 $tests = if ($Test) { $Test } else { "OrderAgentLiveTest,StructuredChatServiceLiveTest,StreamingChatServiceLiveTest" }
 Write-Host "运行联调测试：$tests" -ForegroundColor Cyan
-mvn test "-Dtest=$tests" "-Dsurefire.useFile=false"
+mvn test "-Dtest=$tests" "-Dsurefire.useFile=false" "-Djava.io.tmpdir=$liveTestTemp"

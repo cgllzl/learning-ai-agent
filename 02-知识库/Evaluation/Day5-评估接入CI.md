@@ -129,3 +129,5 @@ Week 6.5 Day 6 加入 Skill 治理后，当前门禁共 30 个主题测试：除
 第二阶段 Day 6.1 在本地脚本与 GitHub Actions 中增加了 Python Skill Script 的 5 个行为测试。门禁现在是 **30 个 Java 主题测试 + 5 个 Python 脚本测试**；真实 DeepSeek 的 2 个 LiveTest 仍单独运行。
 
 Phase 2 Priority 1 Day 1 再加入工作台路由和 HTTP 契约的 3 个 Java 离线测试，当前门禁为 **33 个 Java 主题测试 + 5 个 Python 脚本测试**。真实工作台路由联调仍由 `WorkbenchRoutingLiveTest` 单独运行。
+
+Phase 2 Priority 1 Day 2 加入3个后端身份/会话测试和4个前端测试，当前门禁为 **36个 Java 主题测试 + 5个 Python Script 测试 + 4个前端测试 + TypeScript/生产构建**。真实登录后模型路由由 `DemoAuthenticatedWorkbenchLiveTest` 单独运行。

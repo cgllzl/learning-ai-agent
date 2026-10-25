@@ -4,8 +4,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.when;
@@ -14,12 +15,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(WorkbenchRouteController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class WorkbenchRouteControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private WorkbenchRoutingService routingService;
 
     @Test
@@ -29,7 +31,7 @@ class WorkbenchRouteControllerTest {
                 .thenReturn(new WorkbenchRouteResult(
                         TicketCategory.ORDER, WorkbenchView.ORDERS, false, "NOT_EXECUTED"));
 
-        mockMvc.perform(post("/api/workbench/route")
+        mockMvc.perform(post("/api/v1/workbench/route")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\":\"查询订单 O1001\"}"))
                 .andExpect(status().isOk())
@@ -38,13 +40,13 @@ class WorkbenchRouteControllerTest {
                 .andExpect(jsonPath("$.requiresHumanReview").value(false))
                 .andExpect(jsonPath("$.executionStatus").value("NOT_EXECUTED"));
 
-        mockMvc.perform(post("/api/workbench/route")
+        mockMvc.perform(post("/api/v1/workbench/route")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\":\"  \"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("INVALID_MESSAGE"));
 
-        mockMvc.perform(post("/api/workbench/route")
+        mockMvc.perform(post("/api/v1/workbench/route")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\":\"" + "a".repeat(2001) + "\"}"))
                 .andExpect(status().isBadRequest())

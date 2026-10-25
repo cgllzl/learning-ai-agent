@@ -16,7 +16,7 @@
 | 2 | [TicketCategory.fromModelOutput(...)](../../04-项目/enterprise-agent/src/main/java/com/enterprise/agent/workflow/TicketCategory.java) | 看 Java 怎样收紧模型输出 | 只认精确枚举；含糊文本变 HUMAN |
 | 3 | [WorkbenchRoutingService.route(...)](../../04-项目/enterprise-agent/src/main/java/com/enterprise/agent/workflow/WorkbenchRoutingService.java) | 今天的主流程 | 空输入短路、模型调用、固定页面映射 |
 | 4 | [WorkbenchRouteRequest](../../04-项目/enterprise-agent/src/main/java/com/enterprise/agent/workflow/WorkbenchRouteRequest.java) 与 [WorkbenchRouteResult](../../04-项目/enterprise-agent/src/main/java/com/enterprise/agent/workflow/WorkbenchRouteResult.java) | 看前后端传什么 | 输入只有 message；返回 `NOT_EXECUTED` |
-| 5 | [WorkbenchRouteController.route(...)](../../04-项目/enterprise-agent/src/main/java/com/enterprise/agent/workflow/WorkbenchRouteController.java) | 看 HTTP 入口 | `POST /api/workbench/route`、`@Valid` |
+| 5 | [WorkbenchRouteController.route(...)](../../04-项目/enterprise-agent/src/main/java/com/enterprise/agent/workflow/WorkbenchRouteController.java) | 看 HTTP 入口 | `POST /api/v1/workbench/route`、`@Valid` |
 | 6 | [WorkbenchRoutingServiceTest](../../04-项目/enterprise-agent/src/test/java/com/enterprise/agent/workflow/WorkbenchRoutingServiceTest.java)、[WorkbenchRouteControllerTest](../../04-项目/enterprise-agent/src/test/java/com/enterprise/agent/workflow/WorkbenchRouteControllerTest.java) | 看无模型时如何证明边界 | 固定分类器、HTTP 400、未执行业务 |
 | 7 | [WorkbenchRoutingLiveTest](../../04-项目/enterprise-agent/src/test/java/com/enterprise/agent/workflow/WorkbenchRoutingLiveTest.java) | 看真实模型与本地规则如何接在一起 | 三种输入，三种页面，均未执行 |
 
@@ -26,7 +26,7 @@
 
 ```text
 用户问题
-  → POST /api/workbench/route
+  → POST /api/v1/workbench/route
   → Controller 用 @Valid 拦空白/过长输入
   → RoutingService 调 classifier.classify(message)
   → LangChain4j AI Service 发给 DeepSeek

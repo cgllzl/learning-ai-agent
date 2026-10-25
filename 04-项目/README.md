@@ -47,6 +47,8 @@
 
 第二阶段的产品范围、页面、数据规模和简历验收标准见 `01-每周学习/第二阶段-Agent企业实战/项目产品定义与简历验收.md`。
 
+当前实现目录：`enterprise-agent/` 为 Java 后端，`enterprise-agent-web/` 为 React 企业工作台。学习和必看代码仍以后端身份、业务、安全和 Agent 主链路为先。
+
 ## 使用方式
 
 每个 Sprint 的详细任务见 `Sprints/Sprint-XX.md`。每完成一个 Sprint：

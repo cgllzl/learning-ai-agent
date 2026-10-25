@@ -110,7 +110,9 @@ mvn test "-Dtest=WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest,Workbe
 
 本地与 GitHub CI 门禁运行 33 个 Java 测试和 5 个 Python Script 测试；全量 Java 回归共 235 个测试、0 失败、0 错误，38 个 LiveTest 在普通环境按设计跳过。真实模型测试单独通过，不计入上述普通环境的 38 个跳过。
 
-当前新路由接口尚未接登录、租户、配额和统一 Trace，因此它只用于学习与前端契约验证。现有 `/agent/order` 与 `/rag/chat` 也仍是学习期接口；Day 2～8 会逐步加受信身份、权限和统一工作台入口。不能把路由预判的成功写成“完整企业主链路已完成”。
+> Day 2 更新（2026-10-25）：路由路径已版本化为 `/api/v1/workbench/route`，并要求后端 Bearer 会话；受信用户、租户和角色来自 Spring SecurityContext。配额、统一 Trace、订单/RAG/审批业务授权仍待 Day 3～8 接入。
+
+现有 `/agent/order` 与 `/rag/chat` 仍是学习期接口；不能把路由预判和登录成功写成“完整企业主链路已完成”。
 
 ## 八、小结 → 过渡到 Day 2
 

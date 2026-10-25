@@ -11,7 +11,7 @@
 
 - [x] 回顾现有 Chat、订单 Agent、RAG 与 Ticket Workflow 的入口和调用关系。
 - [x] 确认5种角色与9类页面，画出工作台到后端模块的架构图。
-- [x] 确定 `POST /api/workbench/route` 请求/响应与失败规则。
+- [x] 确定路由接口请求/响应与失败规则；Day 2 将路径版本化为 `POST /api/v1/workbench/route` 并加认证。
 - [x] Java 严格收敛模型输出；含糊或高风险操作建议转人工。
 - [x] 离线测试覆盖订单、知识、异常输出与 HTTP 请求校验。
 - [x] 真实 DeepSeek 验证订单、制度和取消退款三类输入。
