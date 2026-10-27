@@ -15,6 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -73,6 +76,9 @@ class DemoAuthenticationIntegrationTest {
                         .content("{\"message\":\"查询订单 O1001\"}"))
                 .andExpect(status().isUnauthorized());
 
+        // 未认证和伪造令牌都会在安全过滤链被拦截，不能进入工作台业务服务。
+        verify(routingService, never()).route(anyString());
+
         when(routingService.route("查询订单 O1001"))
                 .thenReturn(new WorkbenchRouteResult(
                         TicketCategory.ORDER, WorkbenchView.ORDERS, false, "NOT_EXECUTED"));
@@ -82,6 +88,9 @@ class DemoAuthenticationIntegrationTest {
                         .content("{\"message\":\"查询订单 O1001\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.suggestedView").value("ORDERS"));
+
+        // 默认 verify 等价于 times(1)：证明合法请求确实只进入了一次业务服务。
+        verify(routingService).route("查询订单 O1001");
 
         mockMvc.perform(post("/api/v1/auth/logout")
                         .header("Authorization", "Bearer " + token))
