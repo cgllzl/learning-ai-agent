@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../api/client'
+import { StreamingWorkbench } from './StreamingWorkbench'
 import { roleNames, visibleNavigation } from '../auth/permissions'
 import type { RouteResult, StoredSession, ViewKey } from '../types'
 
@@ -71,6 +72,9 @@ export function WorkspaceShell({ session, onLogout }: WorkspaceShellProps) {
         {error && <div className="error-banner" role="alert">请求失败：{error}</div>}
         {activeView === 'overview' && <Overview />}
         {activeView === 'workbench' && (
+          <>
+          <StreamingWorkbench session={session} />
+          <h2 className="secondary-heading">Day 2 路由预判</h2>
           <section className="content-grid">
             <div className="surface route-form">
               <p className="kicker">ROUTE PREVIEW</p>
@@ -95,6 +99,7 @@ export function WorkspaceShell({ session, onLogout }: WorkspaceShellProps) {
               ) : <p className="muted">提交问题后，这里显示 Java 收敛后的页面建议。</p>}
             </div>
           </section>
+          </>
         )}
         {pageCopy[activeView] && <Placeholder {...pageCopy[activeView]!} />}
       </main>
@@ -106,17 +111,17 @@ function Overview() {
   return (
     <>
       <section className="metric-grid">
-        <Metric label="当前阶段" value="P1 · Day 2" note="身份与前端壳" />
+        <Metric label="当前阶段" value="P1 · Day 3" note="流式工作台" />
         <Metric label="受信身份" value="已接入" note="Bearer → 服务端会话" />
-        <Metric label="路由执行" value="0 次" note="当前仅预判页面" />
+        <Metric label="流式回答" value="已接入" note="步骤、引用、终态" />
         <Metric label="待审批" value="Day 6" note="后续业务接入" />
       </section>
       <section className="surface roadmap-panel">
         <p className="kicker">DELIVERY MAP</p>
         <h2>企业主链路建设进度</h2>
         <div className="roadmap-row">
-          <span className="done">D1 路由契约</span><span className="current">D2 身份与界面</span>
-          <span>D3 流式工作台</span><span>D4 订单</span><span>D5 知识</span><span>D6 审批</span><span>D7 治理</span>
+          <span className="done">D1 路由契约</span><span className="done">D2 身份与界面</span>
+          <span className="current">D3 流式工作台</span><span>D4 订单</span><span>D5 知识</span><span>D6 审批</span><span>D7 治理</span>
         </div>
       </section>
     </>

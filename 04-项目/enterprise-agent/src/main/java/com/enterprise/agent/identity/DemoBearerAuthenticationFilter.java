@@ -27,6 +27,12 @@ public class DemoBearerAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        // SSE 完成时会再次分派请求；第二次也要从 Bearer 会话恢复 SecurityContext。
+        return false;
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {

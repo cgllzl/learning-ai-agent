@@ -9,8 +9,9 @@
 ## 前端任务
 
 - [x] 确定5种角色、9类页面与工作台后端路由预判 API 契约（Phase 2 Priority 1 Day 1）。
-- [x] React + TypeScript + Vite 工程、响应式后台布局与统一 JSON API Client；SSE Client 留到 Day 3。
+- [x] React + TypeScript + Vite 工程、响应式后台布局、统一 JSON API Client 与 POST SSE Client。
 - [x] 登录与受信演示身份、运营总览、AI 工作台路由预览（Phase 2 Priority 1 Day 2）。
+- [x] AI 工作台 Day 3：流式回答、租户演示引用、真实阶段、traceId、停止/重试与失败终态；正式 Tool/Workflow 步骤仍待接入。
 - [ ] 订单中心、知识库中心、审批中心。
 - [ ] Trace/审计、Evaluation、MCP/Skill 治理页面。
 - [ ] 加载、空数据、失败、重试、权限不足和审批过期状态完整。

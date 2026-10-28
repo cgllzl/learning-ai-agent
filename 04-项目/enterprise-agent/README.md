@@ -3,7 +3,7 @@
 企业级 AI Agent 平台（Enterprise AI Knowledge & Operations Agent）。
 
 - 技术栈：Java 21 / Spring Boot 3.5.16 / Maven / LangChain4j 1.18.1（DeepSeek）
-- 当前进度：Phase 2 Priority 1 Day 2 —— React 企业前端壳、服务端演示会话、Spring Security 受信身份、角色导航与真实登录后 DeepSeek 路由已完成
+- 当前进度：Phase 2 Priority 1 Day 3 —— 受信身份后的 SSE 流式工作台、租户演示引用、真实阶段、停止/重试与 DeepSeek 联调已完成
 - 第二阶段产品目标：React 企业工作台 + Spring Boot Agent 后端 + PostgreSQL/pgvector/Redis + 三档合成数据 + 可观测/压测/简历级交付材料
 - 学习配套：知识库根目录 `F:\ChatGPT\学习之路`（本目录即知识库内 `04-项目\enterprise-agent`）
 
@@ -37,6 +37,7 @@ POST /api/v1/auth/demo-login      后端签发随机会话 Token
 GET  /api/v1/auth/me              返回受信用户、租户和角色
 POST /api/v1/auth/logout          注销当前会话
 POST /api/v1/workbench/route      登录后的 DeepSeek 路由预判
+POST /api/v1/workbench/query/stream 登录后的 SSE 流式问答（Day 3 演示资料）
 ```
 
 登录与路由的完整 JSON 契约见 `docs/workbench-api-contract.md`。第一阶段的 `/chat`、`/agent`、`/rag` 暂时作为学习期接口保留，后续逐步迁入 `/api/v1` 产品链。
@@ -259,6 +260,8 @@ mvn test "-Dtest=EnterpriseOrderAfterSalesSkillTest,EnterpriseOrderAfterSalesSki
 mvn test "-Dtest=WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest,WorkbenchRoutingLiveTest"
 .\scripts\test-live.ps1 -Test WorkbenchRoutingLiveTest
 .\scripts\test-live.ps1 -Test DemoAuthenticatedWorkbenchLiveTest
+mvn test "-Dtest=WorkbenchStreamServiceTest,WorkbenchStreamControllerTest"
+.\scripts\test-live.ps1 -Test WorkbenchStreamLiveTest
 ```
 
 ## 里程碑
@@ -276,7 +279,8 @@ mvn test "-Dtest=WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest,Workbe
 - 第二阶段 Day 6.1（2026-10-22）：企业售后 Skill 升至 1.1.0；真实 DeepSeek 提取 CANCEL/O1003，脚本预检发现受信身份、审批和幂等键缺失
 - Phase 2 Priority 1 Day 1（2026-10-22）：工作台路由契约落地；Day 2 已版本化为 `POST /api/v1/workbench/route` 并加入认证
 - Phase 2 Priority 1 Day 2（2026-10-25）：React 工作台、6个后端演示身份与随机 Bearer 会话落地；客服登录后真实调用 DeepSeek 路由，浏览器桌面/手机布局验证通过
+- Phase 2 Priority 1 Day 3（2026-10-28）：SSE 流式工作台落地；异步分派恢复认证，真实 DeepSeek 回答伴随租户演示引用、步骤和完成终态
 
 ## 前端工作台
 
-前端位于 `04-项目/enterprise-agent-web`。本地先运行本项目，再在前端目录执行 `npm run dev`；开发服务使用5173端口并代理 `/api`。前端菜单按角色过滤，但租户与角色始终以后端 `DemoPrincipal` 为准。
+前端位于 `04-项目/enterprise-agent-web`。本地先运行本项目，再在前端目录执行 `npm run dev -- --configLoader native`；开发服务使用5173端口并代理 `/api`。前端菜单按角色过滤，但租户与角色始终以后端 `DemoPrincipal` 为准。进入 AI 工作台可体验 Day 3 流式回答；演示引用尚非正式企业知识库。

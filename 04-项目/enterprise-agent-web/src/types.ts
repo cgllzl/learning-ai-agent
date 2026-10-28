@@ -42,3 +42,21 @@ export interface RouteResult {
   requiresHumanReview: boolean
   executionStatus: 'NOT_EXECUTED'
 }
+
+export type WorkbenchMode = 'GENERAL' | 'KNOWLEDGE'
+
+export interface WorkbenchCitation {
+  sourceId: string
+  title: string
+  excerpt: string
+}
+
+export interface StreamEvent {
+  type: 'step' | 'citations' | 'delta' | 'done'
+  traceId: string
+  sequence: number
+  text: string | null
+  citations: WorkbenchCitation[] | null
+  status: 'COMPLETED' | 'FAILED' | null
+  errorCode: string | null
+}

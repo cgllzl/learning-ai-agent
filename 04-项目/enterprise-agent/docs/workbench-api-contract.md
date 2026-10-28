@@ -1,6 +1,6 @@
 # 企业工作台 API 契约（Phase 2 / Priority 1）
 
-> 版本：草案 v0.2（2026-10-25）。本文件区分“已经实现的认证/路由”与“后续学习日要实现的业务接口”，避免前端把计划中的接口当成现有能力。
+> 版本：草案 v0.3（2026-10-28）。本文件区分已实现的认证、路由与演示流式查询，以及后续学习日的正式业务接口。
 
 ## 1. 已实现：路由预判
 
@@ -48,20 +48,31 @@
 
 Token 是随机会话索引，不包含可由前端修改的租户和角色；会话当前保存在内存中，后端重启后失效。缺失、过期、退出后的 Token 或伪造 Token 访问 `/api/**` 返回 HTTP 401：`{"error":"UNAUTHORIZED"}`。该方式用于本地演示，企业生产认证将在后续接入 SSO/OIDC。
 
-## 3. 现有学习期接口及接入边界
+## 3. Day 3 已实现：统一工作台流式查询
+
+`POST /api/v1/workbench/query/stream`，需要有效 Bearer Token，`Content-Type: application/json`，响应为 `text/event-stream`。
+
+```json
+{"message":"华东零售售后申请期限是什么？","mode":"KNOWLEDGE"}
+```
+
+`mode` 只允许 `KNOWLEDGE / GENERAL`；问题非空且最多 2000 字。响应事件依次包含 `step`、`citations`、零个或多个 `delta`、一个 `done`。每个事件的 JSON 数据都有 `type`、`traceId`、递增 `sequence`，并按类型携带 `text`、`citations`、`status`、`errorCode`。`done.status` 是 `COMPLETED / FAILED`。模型失败返回固定 `MODEL_UNAVAILABLE`，不暴露内部异常。无 Token 为 401，非法请求为 400 `INVALID_QUERY`。
+
+`KNOWLEDGE` 当前使用后端内置的两个租户演示规则，先按受信租户选资料；无匹配资料时返回“资料中没有相关内容”，不调用模型。`GENERAL` 不提供订单、审批或写入工具。步骤只代表本日实际执行的接收、资料筛选和模型生成；正式文档检索、可点击原文、订单 Tool 和持久化 Trace 在 Day 4～7 接入。浏览器停止只取消接收，不保证取消已经开始的模型请求。
+
+## 4. 现有学习期接口及接入边界
 
 | 现有路径 | 当前能力 | 工作台接入状态 |
 | --- | --- | --- |
-| `POST /chat`、`POST /chat/stream` | 通用对话 / SSE | Day 3 接入工作台，补请求身份与链路标识 |
+| `POST /chat`、`POST /chat/stream` | 通用对话 / 旧 SSE | Day 3 新建受认证的产品接口；旧路径仍作为学习期接口保留 |
 | `POST /agent/order` | 学习期订单 Agent | 暂不直接从新 UI 调用；Day 4 先接入可信租户与权限边界 |
 | `POST /rag/chat` | 学习期 RAG 问答 | Day 5 接入前补文档权限与引用展示 |
 | 工单 `TicketWorkflowService.handle(...)` | 条件分支与有限复核 | 当前为服务层能力；后续统一入口接入 |
 
-## 4. 计划中的产品接口（尚未实现）
+## 5. 计划中的产品接口（尚未实现）
 
 | 预计学习日 | 能力 | 候选路径 / 返回重点 |
 | --- | --- | --- |
-| Day 3 | AI 工作台统一查询 | `/api/v1/workbench/query` 与 SSE；answer、sources、steps、status、traceId |
 | Day 4 | 订单中心 | `/api/v1/orders`；租户过滤、分页、详情、物流 |
 | Day 5 | 知识库中心 | `/api/v1/knowledge/*`；文档权限、索引状态、引用 |
 | Day 6 | 审批中心 | `/api/v1/approvals/*`；参数绑定、过期、消费状态 |
@@ -69,13 +80,15 @@ Token 是随机会话索引，不包含可由前端修改的租户和角色；�
 
 这些路径在实现日才最终确定。前端不可通过隐藏按钮代替后端授权；任何写操作仍由后端核验用户、租户、参数级审批、幂等键和审计。
 
-## 5. 当前验收
+## 6. 当前验收
 
 ```powershell
 cd F:\ChatGPT\学习之路\04-项目\enterprise-agent
 mvn test "-Dtest=WorkbenchRoutingServiceTest,WorkbenchRouteControllerTest,WorkbenchRoutingLiveTest"
 .\scripts\test-live.ps1 -Test WorkbenchRoutingLiveTest
 .\scripts\test-live.ps1 -Test DemoAuthenticatedWorkbenchLiveTest
+mvn test "-Dtest=WorkbenchStreamServiceTest,WorkbenchStreamControllerTest"
+.\scripts\test-live.ps1 -Test WorkbenchStreamLiveTest
 ```
 
 第一条在无 API Key 时运行离线测试并跳过 LiveTest；后两条从 `.env` 加载 Key 后真实调用 DeepSeek，其中 Day 2 LiveTest 经真实 HTTP 登录、Bearer 认证和工作台接口完成路由。

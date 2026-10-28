@@ -28,3 +28,4 @@
 - [技术原理与请求流程（Day 2 归档）](技术原理与请求流程.md)
 - [SSE 流式输出（Day 3）](SSE流式输出.md)
 - [JSON Schema 结构化输出（Day 4）](JSON-Schema结构化输出.md)
+- [第二阶段 Priority 1 Day 3：受信身份下的流式 AI 工作台](Phase2-Priority1-Day3-流式工作台.md)
