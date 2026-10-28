@@ -1,6 +1,6 @@
 # Priority 1 Day 2：必看核心代码
 
-> 建议阅读时间：45～55分钟
+> 建议阅读时间：60～75分钟（时间紧时先看第二、三、六、十节）
 > 当天主笔记：`02-知识库/Agent安全/Phase2-Priority1-Day2-受信身份与企业前端壳.md`
 > 本地核心测试：`mvn test -Dtest=DemoAuthenticationIntegrationTest`
 > 真实模型联调：`.\scripts\test-live.ps1 -Test DemoAuthenticatedWorkbenchLiveTest`
@@ -608,3 +608,285 @@ String token = login.path("accessToken").asText();
 8. 前端隐藏审批菜单能否阻止攻击者直接请求审批 API？
 9. 为什么 `localhost:5173` 与 `127.0.0.1:5173` 要分别配置？
 10. 当前演示会话距离生产 SSO 还缺哪些能力？
+
+## 十、从应用启动到一次接口调用：Config、Filter 和 Controller 怎样串起来
+
+前面已经分别看过 Filter、SecurityConfig 和测试，现在把它们连成一条完整时间线。最重要的前提是先分清两个阶段：
+
+```text
+应用启动阶段：先修好安检通道，只执行一次
+请求处理阶段：请求到来后依次过安检，每个请求都会执行
+```
+
+`DemoSecurityConfig` 主要工作在启动阶段，负责“组装规则”；`DemoBearerAuthenticationFilter` 主要工作在请求阶段，负责“根据 Token 恢复身份”。不能把两者理解成每次请求都重新执行一遍配置类。
+
+### 10.1 应用启动阶段：安全通道是怎样组装出来的
+
+应用从主方法开始：
+
+```text
+EnterpriseAgentApplication.main
+  → SpringApplication.run
+  → 创建 Spring ApplicationContext
+  → 扫描 @Configuration、@Service、@RestController
+  → 绑定配置属性并创建业务 Bean
+  → 处理 DemoSecurityConfig
+  → 构建 SecurityFilterChain
+  → 注册 Spring Security 的 Servlet Filter 总入口
+  → Tomcat 开始监听 8080
+```
+
+结合当前项目，可以继续展开：
+
+```text
+1. Spring 扫描到 DemoSecurityConfig
+2. @EnableConfigurationProperties 创建并绑定 DemoSessionProperties
+3. Spring 创建 DemoSessionService 等依赖 Bean
+4. Spring 调用 apiSecurity(HttpSecurity, DemoSessionService)
+5. http.csrf/cors/sessionManagement/authorizeHttpRequests 记录安全规则
+6. new DemoBearerAuthenticationFilter(sessionService) 创建自定义 Filter
+7. addFilterBefore 确定自定义 Filter 在安全链中的相对位置
+8. http.build() 生成 SecurityFilterChain
+9. Spring Security 把一个或多个 SecurityFilterChain 交给 FilterChainProxy
+10. Spring Boot 将 DelegatingFilterProxy 注册到 Tomcat 的 Servlet Filter Chain
+```
+
+这里的 `http.build()` 只在应用上下文构建阶段调用，不是每次接口请求都重新执行。
+
+### 10.2 三层 Filter 结构分别负责什么
+
+一次请求从 Tomcat 进入 Spring Security 时，会经过三层入口：
+
+```text
+Tomcat Servlet Filter Chain
+  ↓
+DelegatingFilterProxy
+  ↓
+FilterChainProxy
+  ↓
+匹配到的 SecurityFilterChain
+  ↓
+DemoBearerAuthenticationFilter 等具体安全 Filter
+```
+
+#### 第一层：`DelegatingFilterProxy`
+
+Tomcat 只认识 Servlet Filter，不直接认识 Spring Bean。`DelegatingFilterProxy` 是连接 Tomcat 与 Spring 容器的桥梁，它把请求转交给 Spring 中名为 `springSecurityFilterChain` 的总入口。
+
+#### 第二层：`FilterChainProxy`
+
+`springSecurityFilterChain` 实际上通常是 `FilterChainProxy`。它管理一个或多个 `SecurityFilterChain`，请求到来时负责选择第一条匹配的安全链。
+
+#### 第三层：`SecurityFilterChain`
+
+这是当前项目通过 `http.build()` 构建出来的安全链，里面包含 CORS、SecurityContext、异常转换、授权以及自定义 Bearer Filter 等具体 Filter。
+
+当前 `apiSecurity` 没有配置独立的 `securityMatcher`，因此这条链可以接住所有请求；链内再由 `requestMatchers` 决定各 URL 是否需要认证。
+
+### 10.3 四种“顺序”不能混在一起
+
+项目中同时存在四种不同顺序：
+
+| 顺序类型 | 决定因素 | 当前项目中的例子 |
+| --- | --- | --- |
+| Bean 创建顺序 | Bean 的依赖关系 | 创建 `apiSecurity` 前要先有 `DemoSessionService` |
+| 多条安全链的选择顺序 | `@Order` 与 `securityMatcher` | 当前只有一条自定义链；以后多链时选择第一条匹配项 |
+| 单条安全链中的 Filter 顺序 | Spring Security 标准位置及 `addFilterBefore/After/At` | Bearer Filter 位于 `UsernamePasswordAuthenticationFilter` 标准位置之前 |
+| URL 授权规则顺序 | `requestMatchers` 的声明顺序 | 先公开登录，再用 `/api/**` 保护其余 API |
+
+Spring 不承诺按照 Java 文件名、类的书写先后或 `@Bean` 方法在文件中的上下位置创建 Bean。需要先创建谁，主要由依赖关系决定。
+
+`addFilterBefore(A, B.class)` 描述的是请求阶段 A 相对 B 的执行位置，不是说应用启动时 A 类一定早于 B 类加载。即使项目没有启用表单登录，Spring Security 仍知道 `UsernamePasswordAuthenticationFilter` 的标准位置，可以把自定义 Filter 安排在它之前。
+
+### 10.4 一次受保护接口的完整请求链
+
+以工作台请求为例：
+
+```http
+POST /api/v1/workbench/route
+Authorization: Bearer abc123
+Content-Type: application/json
+
+{"message":"查询订单 O1001"}
+```
+
+它的完整链路是：
+
+```text
+浏览器
+  → Tomcat 接收 HTTP 请求
+  → Servlet Filter Chain
+  → DelegatingFilterProxy
+  → FilterChainProxy 选择 SecurityFilterChain
+  → SecurityContext 相关 Filter 准备当前请求的安全上下文
+  → CORS Filter 处理跨域规则
+  → DemoBearerAuthenticationFilter 解析并验证 Bearer Token
+  → 后续 Spring Security Filter
+  → AuthorizationFilter 检查 /api/** 是否已认证
+  → DispatcherServlet
+  → HandlerMapping 找到 WorkbenchRouteController
+  → 参数解析器读取 @RequestBody 和 @AuthenticationPrincipal
+  → Controller 调用 WorkbenchRoutingService
+  → LangChain4j AI Service 调用大模型
+  → Controller 返回 Java 对象
+  → Jackson HttpMessageConverter 转成 JSON
+  → 响应沿 Filter Chain 反方向返回
+  → 清理当前请求的 SecurityContext
+  → 浏览器收到响应
+```
+
+这里列的是最值得学习的关键相对顺序，不要求死记 Spring Security 内部每一个辅助 Filter 的类名。版本升级可能调整内部实现，但下面这条主线不能颠倒：
+
+```text
+准备 SecurityContext
+  → 尝试恢复身份
+  → 执行授权判断
+  → 进入 Controller
+```
+
+### 10.5 `filterChain.doFilter` 为什么让请求继续前进
+
+Filter Chain 本质上是一层层嵌套的方法调用：
+
+```text
+Filter A 请求前逻辑
+  → Filter B 请求前逻辑
+    → DemoBearerAuthenticationFilter 请求前逻辑
+      → Controller
+    ← DemoBearerAuthenticationFilter 请求后逻辑
+  ← Filter B 请求后逻辑
+← Filter A 请求后逻辑
+```
+
+所以请求方向和响应方向相反：
+
+```text
+请求：Filter A → Filter B → Filter C → Controller
+响应：Controller → Filter C → Filter B → Filter A
+```
+
+当前 Bearer Filter 调用：
+
+```java
+filterChain.doFilter(request, response);
+```
+
+相当于把请求交给下一道安检。如果漏掉它，请求会停在当前 Filter，后面的授权判断和 Controller 都不会执行。
+
+### 10.6 合法 Token 请求为什么能进入 Controller
+
+合法请求在 Bearer Filter 中经历：
+
+```text
+Authorization: Bearer abc123
+  → bearerToken 提取 abc123
+  → DemoSessionService.resolve("abc123")
+  → 找到未过期的 StoredSession
+  → 得到后端可信 DemoPrincipal
+  → 业务角色转换为 ROLE_* Authority
+  → 创建 authenticated Authentication
+  → 写入 SecurityContextHolder
+  → filterChain.doFilter
+```
+
+后面的授权 Filter 检查 `/api/**`：
+
+```text
+匹配 .requestMatchers("/api/**").authenticated()
+  → SecurityContext 中存在有效 Authentication
+  → 授权通过
+  → 进入 DispatcherServlet 和 Controller
+```
+
+Controller 中的：
+
+```java
+@AuthenticationPrincipal DemoPrincipal principal
+```
+
+来自 `Authentication.getPrincipal()`，最终源头是后端会话目录，不是前端请求体。
+
+### 10.7 缺失或伪造 Token 为什么仍然返回 401
+
+伪造 Token 时，Filter 不会自己抛异常：
+
+```text
+Bearer forged-token
+  → bearerToken 成功提取字符串
+  → sessionService.resolve 返回 Optional.empty
+  → ifPresent 中的认证代码不执行
+  → SecurityContext 中没有 Authentication
+  → Filter 仍调用 filterChain.doFilter
+```
+
+请求继续到授权阶段：
+
+```text
+/api/** 要求 authenticated
+  → 当前没有有效 Authentication
+  → 授权失败
+  → ExceptionTranslationFilter 触发 AuthenticationEntryPoint
+  → 返回 401 + {"error":"UNAUTHORIZED"}
+  → 不进入 Controller 和 WorkbenchRoutingService
+```
+
+这也解释了测试为什么同时需要两类断言：
+
+```java
+.andExpect(status().isUnauthorized());
+verify(routingService, never()).route(anyString());
+```
+
+第一句证明客户端收到 401，第二句证明非法请求确实没有穿透安全链进入业务服务。
+
+### 10.8 登录接口为什么没 Token 也能进入 Controller
+
+登录请求同样会经过整条 Spring Security Filter Chain：
+
+```text
+POST /api/v1/auth/demo-login
+  → DemoBearerAuthenticationFilter
+  → 没有 Bearer Token，因此不创建 Authentication
+  → filterChain.doFilter
+  → 匹配 demo-login 的 permitAll 规则
+  → 无需认证，允许进入 DemoAuthController.login
+  → DemoSessionService 根据 accountId 查后端账号目录
+  → 生成随机 Token 并保存服务端会话
+  → 返回 DemoLoginResponse
+```
+
+`permitAll()` 不表示“跳过所有 Filter”，而是表示“经过安全过滤链后，这个 URL 不要求当前请求必须认证”。
+
+授权规则必须从特殊到一般：
+
+```java
+.requestMatchers(
+        "/api/v1/auth/demo-accounts",
+        "/api/v1/auth/demo-login",
+        "/actuator/**").permitAll()
+.requestMatchers("/api/**").authenticated()
+```
+
+如果先写宽泛的 `/api/**`，登录接口会提前匹配“必须认证”，用户就会陷入“必须先登录才能登录”的矛盾。
+
+### 10.9 Controller 参数的两个来源
+
+进入 Controller 后，Spring MVC 解析两种完全不同的参数：
+
+```text
+@RequestBody WorkbenchRouteRequest
+  → 来自浏览器 JSON
+  → 是用户输入，不可信
+
+@AuthenticationPrincipal DemoPrincipal
+  → 来自 SecurityContext 中的 Authentication
+  → 是后端验证 Token 后恢复的受信身份
+```
+
+因此，企业接口可以接收用户的问题、筛选条件和操作参数，但租户、用户 ID 和角色必须来自受信 Principal，不能让请求体自行声明。
+
+### 10.10 最后用三句话记住整条链
+
+1. `DemoSecurityConfig` 在启动阶段构建规则和 Filter Chain，不会在每次请求时重新 `build()`。
+2. `DemoBearerAuthenticationFilter` 在请求阶段尝试恢复身份，但最终是否放行由后面的授权规则决定。
+3. `DispatcherServlet` 和 Controller 只有在安全链放行后才会执行；响应产生后再按相反方向穿过 Filter Chain 返回客户端。
